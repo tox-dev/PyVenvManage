@@ -1,4 +1,4 @@
-package com.github.nokia;
+package com.github.pyvenvmanage;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;

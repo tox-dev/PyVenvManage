@@ -3,9 +3,9 @@
   -->
 
 <idea-plugin>
-    <id>com.github.nokia.pyvenv</id>
+    <id>com.github.pyvenvmanage.pyvenv</id>
     <name>PyVenv Manage</name>
-    <vendor url="https://github.com/nokia/PyVenvManage">Nokia</vendor>
+    <vendor url="https://github.com/pyvenvmanage/PyVenvManage">pyvenvmanage</vendor>
 
     <description><![CDATA[]]></description>
 
@@ -15,22 +15,22 @@
     <depends optional="true">com.intellij.modules.python</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <iconProvider implementation="com.github.nokia.VenvIconProvider" />
-        <iconLayerProvider implementation="com.github.nokia.VenvIconProvider" />
+        <iconProvider implementation="com.github.pyvenvmanage.VenvIconProvider" />
+        <iconLayerProvider implementation="com.github.pyvenvmanage.VenvIconProvider" />
     </extensions>
 
     <actions>
         <action
-                id="VenvConfigPlugin.com.github.nokia.ConfigureProjectPythonVenv"
-                class="com.github.nokia.ConfigureProjectPythonVenv"
+                id="VenvConfigPlugin.com.github.pyvenvmanage.ConfigureProjectPythonVenv"
+                class="com.github.pyvenvmanage.ConfigureProjectPythonVenv"
                 text="Set project venv"
                 description="Configures this directory to be the venv for the project"
                 icon="PyVenvManageIcons.CONFIGURE_VENV">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
         <action
-                id="VenvConfigPlugin.com.github.nokia.ConfigureModulePythonVenv"
-                class="com.github.nokia.ConfigureModulePythonVenv"
+                id="VenvConfigPlugin.com.github.pyvenvmanage.ConfigureModulePythonVenv"
+                class="com.github.pyvenvmanage.ConfigureModulePythonVenv"
                 text="Set module venv for %s"
                 description="Configures this directory to be the venv for the project"
                 icon="PyVenvManageIcons.CONFIGURE_VENV">

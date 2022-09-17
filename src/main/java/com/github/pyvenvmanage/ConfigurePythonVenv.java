@@ -1,8 +1,9 @@
 /*
  * Copyright (C) 2017 Nokia
+ * Copyright (C) 2022 PyVenvManage Org
  */
 
-package com.github.nokia;
+package com.github.pyvenvmanage;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;

@@ -1,8 +1,9 @@
 /*
  * Copyright (C) 2020 Nokia
+ * Copyright (C) 2022 PyVenvManage Org
  */
 
-package com.github.nokia;
+package com.github.pyvenvmanage;
 
 import com.intellij.ide.IconLayerProvider;
 import com.intellij.ide.IconProvider;
