@@ -25,7 +25,7 @@ public class ConfigureModulePythonVenv extends ConfigurePythonVenv {
         }
         PythonSdkType.getInstance().setupSdkPaths(sdk);
 
-        Module module = ProjectFileIndex.SERVICE.getInstance(project).getModuleForFile(file, false);
+        Module module = ProjectFileIndex.getInstance(project).getModuleForFile(file, false);
 
         if (null != module) {
             ModuleRootModificationUtil.setModuleSdk(module, sdk);
@@ -39,7 +39,7 @@ public class ConfigureModulePythonVenv extends ConfigurePythonVenv {
         if (isEventOnVenvDir(e)) {
             VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
             Project project = e.getProject();
-            Module module = ProjectFileIndex.SERVICE.getInstance(project).getModuleForFile(file, false);
+            Module module = ProjectFileIndex.getInstance(project).getModuleForFile(file, false);
             if (null != module) {
                 e.getPresentation().setText(String.format(POPUP_ITEM_TEXT, module.getName()));
                 e.getPresentation().setEnabledAndVisible(true);
