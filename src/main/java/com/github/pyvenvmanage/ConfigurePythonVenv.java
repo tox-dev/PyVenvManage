@@ -7,6 +7,7 @@ package com.github.pyvenvmanage;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;
+import com.intellij.notification.NotificationGroupManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -66,9 +67,10 @@ public abstract class ConfigurePythonVenv extends AnAction {
     }
 
     void showNotification(Project project, String message) {
-        NotificationGroup notificationGroup = NotificationGroup.balloonGroup("SDK changed notification");
-        Notification notification = notificationGroup.createNotification(message, MessageType.INFO);
-        notification.notify(project);
+        NotificationGroupManager.getInstance()
+                .getNotificationGroup("SDK changed notification")
+                .createNotification(message, MessageType.INFO)
+                .notify(project);
     }
 
     boolean isEventOnVenvDir(AnActionEvent e) {

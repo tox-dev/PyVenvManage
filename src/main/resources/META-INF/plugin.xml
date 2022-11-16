@@ -17,6 +17,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <iconProvider implementation="com.github.pyvenvmanage.VenvIconProvider" />
         <iconLayerProvider implementation="com.github.pyvenvmanage.VenvIconProvider" />
+        <notificationGroup id="SDK changed notification"
+                           displayType="BALLOON"
+                           key="com.github.pyvenvmanage.pyvenv.sdk.changed"/>
     </extensions>
 
     <actions>
