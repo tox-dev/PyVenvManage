@@ -25,5 +25,8 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Execute Gradle build
+      - name: Build plugin
         run: ./gradlew buildPlugin
+
+      - name: Run plugin verifier
+        run: ./gradlew runPluginVerifier
