@@ -15,8 +15,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-#          - macos-latest      flaky fails
-#          - windows-latest    flaky fails
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
