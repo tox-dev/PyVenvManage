@@ -29,7 +29,7 @@ public class ConfigureModulePythonVenv extends ConfigurePythonVenv {
 
         if (null != module) {
             ModuleRootModificationUtil.setModuleSdk(module, sdk);
-            String message = MessageFormat.format("Updated SDK for module {0} to: {1}", module, sdk);
+            String message = MessageFormat.format("Updated SDK for module {0} to: {1}", module.getName(), sdk.getName());
             showNotification(project, message);
         }
     }
