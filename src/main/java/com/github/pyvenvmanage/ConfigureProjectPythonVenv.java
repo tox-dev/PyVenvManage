@@ -18,7 +18,7 @@ public class ConfigureProjectPythonVenv extends ConfigurePythonVenv {
         }
 
         SdkConfigurationUtil.setDirectoryProjectSdk(project, sdk);
-        String message = MessageFormat.format("Updated SDK for project {0} to: {1}", project, sdk);
+        String message = MessageFormat.format("Updated SDK for project {0} to: {1}", project.getName(), sdk.getName());
         showNotification(project, message);
     }
 

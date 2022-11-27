@@ -4,7 +4,7 @@
 
 <idea-plugin>
     <id>com.github.pyvenvmanage.pyvenv</id>
-    <name>PyVenv Manage</name>
+    <name>PyVenv Manage 2</name>
     <vendor url="https://github.com/pyvenvmanage/PyVenvManage">pyvenvmanage</vendor>
 
     <description><![CDATA[]]></description>
@@ -18,23 +18,22 @@
         <iconProvider implementation="com.github.pyvenvmanage.VenvIconProvider" />
         <iconLayerProvider implementation="com.github.pyvenvmanage.VenvIconProvider" />
         <notificationGroup id="SDK changed notification"
-                           displayType="BALLOON"
-                           key="com.github.pyvenvmanage.pyvenv.sdk.changed"/>
+                           displayType="BALLOON"/>
     </extensions>
 
     <actions>
         <action
-                id="VenvConfigPlugin.com.github.pyvenvmanage.ConfigureProjectPythonVenv"
+                id="com.github.pyvenvmanage.ConfigureProjectPythonVenv"
                 class="com.github.pyvenvmanage.ConfigureProjectPythonVenv"
-                text="Set project venv"
+                text="Set Project Venv"
                 description="Configures this directory to be the venv for the project"
                 icon="PyVenvManageIcons.CONFIGURE_VENV">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
         <action
-                id="VenvConfigPlugin.com.github.pyvenvmanage.ConfigureModulePythonVenv"
+                id="com.github.pyvenvmanage.ConfigureModulePythonVenv"
                 class="com.github.pyvenvmanage.ConfigureModulePythonVenv"
-                text="Set module venv for %s"
+                text="Set Module Venv for %S"
                 description="Configures this directory to be the venv for the project"
                 icon="PyVenvManageIcons.CONFIGURE_VENV">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
