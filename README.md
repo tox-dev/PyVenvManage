@@ -21,7 +21,7 @@ With PyVenvManage the selection and setup of the venv is a few clicks without di
 
 In PyCharm open Settings -> Plugins, and install PyVenv Manage.
 
-The official plugin page is at https://plugins.jetbrains.com/plugin/10085-pyvenv-manage
+The official plugin page is at https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
 
 ## Usage
 
@@ -30,4 +30,4 @@ The official plugin page is at https://plugins.jetbrains.com/plugin/10085-pyvenv
 
 ## License
 
-This project is licensed under the BSD-3-Clause license - see the [LICENSE](https://github.com/nokia/PyVenvManage/blob/master/LICENSE).
+This project is licensed under the BSD-3-Clause license - see the [LICENSE](https://github.com/pyvenvmanage/PyVenvManage/blob/main/LICENSE).
