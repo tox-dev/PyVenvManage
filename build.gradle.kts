@@ -14,9 +14,9 @@ plugins {
 
 val pluginGroup: String = "com.github.pyvenvmanage.pyvenv"
 val pluginNameG: String = "PyVenv Manage"
-val pluginVersion: String = "1.3.8"
+val pluginVersion: String = "1.3.9"
 val pluginSinceBuild = "211"
-val pluginUntilBuild = "231.*"
+val pluginUntilBuild = "232.*"
 // https://www.jetbrains.com/idea/download/other.html
 val pluginVerifierIdeVersions = "222.4345.14"
 val platformType = "IC"
