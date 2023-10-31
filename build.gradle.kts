@@ -5,18 +5,18 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.8.0"
-    id("org.jetbrains.intellij") version "1.12.0"
+    id("org.jetbrains.kotlin.jvm") version "1.9.10"
+    id("org.jetbrains.intellij") version "1.16.0"
     id("org.jetbrains.changelog") version "1.3.1"
-    id("io.gitlab.arturbosch.detekt") version "1.22.0"
-    id("org.jlleitschuh.gradle.ktlint") version "11.1.0"
+    id("io.gitlab.arturbosch.detekt") version "1.23.1"
+    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
 val pluginGroup: String = "com.github.pyvenvmanage.pyvenv"
 val pluginNameG: String = "PyVenv Manage"
-val pluginVersion: String = "1.3.9"
+val pluginVersion: String = "1.3.10"
 val pluginSinceBuild = "211"
-val pluginUntilBuild = "232.*"
+val pluginUntilBuild = ""
 // https://www.jetbrains.com/idea/download/other.html
 val pluginVerifierIdeVersions = "222.4345.14"
 val platformType = "IC"
