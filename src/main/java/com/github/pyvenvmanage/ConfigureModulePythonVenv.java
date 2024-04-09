@@ -16,8 +16,6 @@ import java.text.MessageFormat;
 
 public class ConfigureModulePythonVenv extends ConfigurePythonVenv {
 
-    private final String POPUP_ITEM_TEXT = "Set module venv for %s";
-
     protected void setInterpreter(Project project, VirtualFile file, String pythonExecutable) {
         Sdk sdk = findExistingSdkForExecutable(pythonExecutable, project);
         if (sdk == null) {
@@ -41,6 +39,7 @@ public class ConfigureModulePythonVenv extends ConfigurePythonVenv {
             Project project = e.getProject();
             Module module = ProjectFileIndex.getInstance(project).getModuleForFile(file, false);
             if (null != module) {
+                String POPUP_ITEM_TEXT = "Set module venv for %s";
                 e.getPresentation().setText(String.format(POPUP_ITEM_TEXT, module.getName()));
                 e.getPresentation().setEnabledAndVisible(true);
                 return;

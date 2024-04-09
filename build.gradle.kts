@@ -5,24 +5,24 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.9.10"
-    id("org.jetbrains.intellij") version "1.16.0"
+    id("org.jetbrains.kotlin.jvm") version "1.9.23"
+    id("org.jetbrains.intellij") version "1.17.3"
     id("org.jetbrains.changelog") version "1.3.1"
-    id("io.gitlab.arturbosch.detekt") version "1.23.1"
+    id("io.gitlab.arturbosch.detekt") version "1.23.6"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
 val pluginGroup: String = "com.github.pyvenvmanage.pyvenv"
 val pluginNameG: String = "PyVenv Manage"
-val pluginVersion: String = "1.3.10"
-val pluginSinceBuild = "211"
+val pluginVersion: String = "1.4.0"
+val pluginSinceBuild = "241"
 val pluginUntilBuild = ""
 // https://www.jetbrains.com/idea/download/other.html
-val pluginVerifierIdeVersions = "222.4345.14"
+val pluginVerifierIdeVersions = "241.14494.240"
 val platformType = "IC"
-val platformVersion = "2021.1"
+val platformVersion = "2024.1"
 // PythonCore https://plugins.jetbrains.com/plugin/631-python/versions
-var usePlugins = "PythonCore:211.6693.111"
+var usePlugins = "PythonCore:241.14494.240"
 
 group = pluginGroup
 version = pluginVersion
@@ -37,16 +37,16 @@ dependencies {
 
 tasks {
     withType<JavaCompile> {
-        sourceCompatibility = "11"
-        targetCompatibility = "11"
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
     }
     listOf("compileKotlin", "compileTestKotlin").forEach {
         getByName<KotlinCompile>(it) {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.jvmTarget = "17"
         }
     }
     withType<Detekt> {
-        jvmTarget = "11"
+        jvmTarget = "17"
         reports {
             html.required.set(true)
         }
@@ -79,7 +79,7 @@ intellij {
 }
 
 detekt {
-    config = files("./detekt-config.yml")
+    config.setFrom("./detekt-config.yml")
     buildUponDefaultConfig = true
 }
 
