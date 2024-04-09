@@ -2,6 +2,10 @@
 
 # PyVenvManage Changelog
 
+## [1.4.0]
+### Fixed
+- Fix support for 2024.1
+- 
 ## [1.3.4]
 ### Fixed
 - Fix support for 2021.3
@@ -32,4 +36,3 @@
 ### Changed
 - change items
 -->
-

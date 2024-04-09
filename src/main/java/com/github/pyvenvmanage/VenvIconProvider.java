@@ -10,8 +10,8 @@ import com.intellij.ide.IconProvider;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
+import com.jetbrains.python.icons.PythonIcons;
 import com.jetbrains.python.sdk.PythonSdkUtil;
-import icons.PythonIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,7 +28,7 @@ public class VenvIconProvider extends IconProvider implements IconLayerProvider 
             final String venvRootPath = ((PsiDirectory) element).getVirtualFile().getPath();
             if (PythonSdkUtil.getPythonExecutable(venvRootPath) != null) {
                 return PythonIcons.Python.Virtualenv;
-            };
+            }
         }
         return null;
     }
@@ -40,7 +40,7 @@ public class VenvIconProvider extends IconProvider implements IconLayerProvider 
             final String venvRootPath = ((PsiDirectory) element).getVirtualFile().getPath();
             if (PythonSdkUtil.getPythonExecutable(venvRootPath) != null) {
                 return PythonIcons.Python.Virtualenv;
-            };
+            }
         }
         return null;
     }
