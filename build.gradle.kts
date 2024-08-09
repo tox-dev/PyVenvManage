@@ -1,94 +1,156 @@
-import io.gitlab.arturbosch.detekt.Detekt
-import org.jetbrains.changelog.date
-import org.jetbrains.intellij.tasks.PatchPluginXmlTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+import org.jetbrains.changelog.Changelog
+import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.Constants.Constraints
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
-    id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.9.23"
-    id("org.jetbrains.intellij") version "1.17.3"
-    id("org.jetbrains.changelog") version "1.3.1"
-    id("io.gitlab.arturbosch.detekt") version "1.23.6"
-    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.intelliJPlatform)
+    alias(libs.plugins.changelog)
+    alias(libs.plugins.testLogger)
+    alias(libs.plugins.kover)
+    alias(libs.plugins.ktlint)
+//    alias(libs.plugins.taskinfo) // cache incompatible https://gitlab.com/barfuin/gradle-taskinfo/-/issues/23
 }
 
-val pluginGroup: String = "com.github.pyvenvmanage.pyvenv"
-val pluginNameG: String = "PyVenv Manage"
-val pluginVersion: String = "1.4.0"
-val pluginSinceBuild = "241"
-val pluginUntilBuild = ""
-// https://www.jetbrains.com/idea/download/other.html
-val pluginVerifierIdeVersions = "241.14494.240"
-val platformType = "IC"
-val platformVersion = "2024.1"
-// PythonCore https://plugins.jetbrains.com/plugin/631-python/versions
-var usePlugins = "PythonCore:241.14494.240"
+group = providers.gradleProperty("pluginGroup").get()
+version = providers.gradleProperty("pluginVersion").get()
 
-group = pluginGroup
-version = pluginVersion
-
+kotlin {
+    jvmToolchain(17)
+}
 repositories {
     mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
 dependencies {
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
+    testImplementation("com.squareup.okhttp3:okhttp:4.12.0") // needed for connecting to remote robot
+    testImplementation(libs.jupiter)
+    testRuntimeOnly(libs.jupiterEngine)
+    testRuntimeOnly("junit:junit:4.13.2") // https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1711
+    testImplementation(libs.remoteRobot)
+    testImplementation(libs.remoteRobotFixtures)
+
+    intellijPlatform {
+        create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+        plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
+        instrumentationTools()
+        pluginVerifier()
+        zipSigner()
+        testFramework(TestFrameworkType.JUnit5)
+    }
 }
 
-tasks {
-    withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
-    }
-    listOf("compileKotlin", "compileTestKotlin").forEach {
-        getByName<KotlinCompile>(it) {
-            kotlinOptions.jvmTarget = "17"
+intellijPlatform {
+    pluginConfiguration {
+        version = providers.gradleProperty("pluginVersion")
+        description =
+            providers.fileContents(layout.projectDirectory.file("README.md")).asText.map {
+                val start = "<!-- Plugin description -->"
+                val end = "<!-- Plugin description end -->"
+                with(it.lines()) {
+                    if (!containsAll(listOf(start, end))) {
+                        throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
+                    }
+                    subList(indexOf(start) + 1, indexOf(end)).joinToString("\n").let(::markdownToHTML)
+                }
+            }
+
+        val changelog = project.changelog
+        changeNotes =
+            providers.gradleProperty("pluginVersion").map { pluginVersion ->
+                with(changelog) {
+                    renderItem(
+                        (getOrNull(pluginVersion) ?: getUnreleased())
+                            .withHeader(false)
+                            .withEmptySections(false),
+                        Changelog.OutputType.HTML,
+                    )
+                }
+            }
+
+        ideaVersion {
+            sinceBuild = providers.gradleProperty("pluginSinceBuild")
+            untilBuild = provider { null }
         }
     }
-    withType<Detekt> {
-        jvmTarget = "17"
-        reports {
-            html.required.set(true)
+
+    signing {
+        certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
+        privateKey = providers.environmentVariable("PRIVATE_KEY")
+        password = providers.environmentVariable("PRIVATE_KEY_PASSWORD")
+    }
+
+    publishing {
+        token = providers.environmentVariable("PUBLISH_TOKEN")
+        channels =
+            providers.gradleProperty("pluginVersion").map {
+                listOf(
+                    it
+                        .substringAfter('-', "")
+                        .substringBefore('.')
+                        .ifEmpty { "default" },
+                )
+            }
+    }
+
+    pluginVerification {
+        ides {
+            recommended()
         }
     }
-    patchPluginXml {
-        version.set(pluginVersion)
-        sinceBuild.set(pluginSinceBuild)
-        untilBuild.set(pluginUntilBuild)
-    }
-
-    withType<PatchPluginXmlTask> {
-        pluginDescription.set(provider { file("description.html").readText() })
-    }
-
-    runPluginVerifier {
-        ideVersions.set(listOf(pluginVerifierIdeVersions))
-    }
-    publishPlugin {
-        dependsOn("patchChangelog")
-        token.set(System.getenv("PUBLISH_TOKEN"))
-        channels.set(listOf(pluginVersion.split('-').getOrElse(1) { "default" }.split('.').first()))
-    }
-}
-
-intellij {
-    pluginName.set(pluginNameG)
-    version.set(platformVersion)
-    type.set(platformType)
-    plugins.set(listOf(usePlugins))
-}
-
-detekt {
-    config.setFrom("./detekt-config.yml")
-    buildUponDefaultConfig = true
 }
 
 changelog {
-    version.set(pluginVersion)
-    path.set("${project.projectDir}/CHANGELOG.md")
-    header.set(provider { "[${version.get()}] - ${date()}" })
-    itemPrefix.set("-")
-    keepUnreleasedSection.set(true)
-    unreleasedTerm.set("[Unreleased]")
-    groups.set(listOf("Added", "Changed", "Deprecated", "Removed", "Fixed", "Security"))
+    groups.empty()
+    repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
+}
+kover {
+    reports {
+        total {
+            xml {
+                onCheck = true
+            }
+        }
+    }
+}
+
+tasks {
+    wrapper {
+        gradleVersion = providers.gradleProperty("gradleVersion").get()
+    }
+    publishPlugin {
+        dependsOn(patchChangelog)
+    }
+    buildSearchableOptions {
+        enabled = false
+    }
+    test {
+        useJUnitPlatform()
+    }
+}
+
+val runIdeForUiTests by intellijPlatformTesting.runIde.registering {
+    task {
+        jvmArgumentProviders +=
+            CommandLineArgumentProvider {
+                listOf(
+                    "-Drobot-server.port=8082",
+                    "-Dide.mac.message.dialogs.as.sheets=false",
+                    "-Djb.privacy.policy.text=<!--999.999-->",
+                    "-Djb.consents.confirmation.enabled=false",
+                    "-Didea.trust.all.projects=true",
+                    "-Dide.mac.file.chooser.native=false",
+                    "-Dide.show.tips.on.startup.default.value=false",
+                )
+            }
+    }
+
+    plugins {
+        robotServerPlugin(Constraints.LATEST_VERSION)
+    }
 }
