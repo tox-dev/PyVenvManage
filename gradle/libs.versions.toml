@@ -1,0 +1,25 @@
+[versions]
+jupiter = "5.10.3"
+changelog = "2.2.1"
+intelliJPlatform = "2.0.1"
+kotlin = "1.9.24"
+kover = "0.8.3"
+remoteRobot = "0.11.23"
+ktlint = "12.1.1"
+taskinfo = "2.2.0"
+testLogger = "4.0.0"
+
+[libraries]
+jupiter = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "jupiter" }
+jupiterEngine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "jupiter" }
+remoteRobot = { group = "com.intellij.remoterobot", name = "remote-robot", version.ref = "remoteRobot" }
+remoteRobotFixtures = { group = "com.intellij.remoterobot", name = "remote-fixtures", version.ref = "remoteRobot" }
+
+[plugins]
+changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
+intelliJPlatform = { id = "org.jetbrains.intellij.platform", version.ref = "intelliJPlatform" }
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+#taskinfo = { id = "org.barfuin.gradle.taskinfo", version.ref = "taskinfo" }
+testLogger = { id = "com.adarshr.test-logger", version.ref = "testLogger" }

@@ -1,6 +1,12 @@
 version: 2
 updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    target-branch: "next"
+    schedule:
+      interval: "daily"
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "next"
     schedule:
       interval: "daily"

@@ -1,0 +1,43 @@
+name: Bug report
+description: Create a report to help us improve
+labels: ["bug"]
+body:
+  - type: input
+    id: gradle
+    attributes:
+      label: Used within IDE (name and version)
+      placeholder: PyCharm 2024.2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - macOS
+        - Linux
+        - Windows
+
+  - type: input
+    id: version
+    attributes:
+      label: PyVenv Plugin version
+      placeholder: 2.0.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: What happened?
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output or stack trace
+      description: If there is an exception stack trace post it here.
+      render: shell
