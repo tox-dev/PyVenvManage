@@ -1,5 +1,10 @@
 # PyVenvManage
 
+[![Build](https://github.com/tox-dev/PyVenvManage/actions/workflows/check.yml/badge.svg)](https://github.com/tox-dev/PyVenvManage/actions/workflows/check.yml)
+[![Version](https://img.shields.io/jetbrains/plugin/v/20536)](https://plugins.jetbrains.com/plugin/20536/versions)
+[![Rating](https://img.shields.io/jetbrains/plugin/r/rating/20536)](https://plugins.jetbrains.com/plugin/20536)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/20536)](https://plugins.jetbrains.com/plugin/20536)
+
 ## Introduction
 
 <!-- Plugin description -->
