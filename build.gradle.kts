@@ -5,13 +5,15 @@ import org.jetbrains.intellij.platform.gradle.Constants.Constraints
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
-    alias(libs.plugins.kotlin)
-    alias(libs.plugins.intelliJPlatform)
     alias(libs.plugins.changelog)
-    alias(libs.plugins.testLogger)
+    alias(libs.plugins.intelliJPlatform)
+    alias(libs.plugins.kotlin)
     alias(libs.plugins.kover)
     alias(libs.plugins.ktlint)
 //    alias(libs.plugins.taskinfo) // cache incompatible https://gitlab.com/barfuin/gradle-taskinfo/-/issues/23
+    alias(libs.plugins.testLogger)
+    alias(libs.plugins.versionPlugin)
+    alias(libs.plugins.versionUpdate)
 }
 
 group = providers.gradleProperty("pluginGroup").get()
@@ -152,5 +154,11 @@ val runIdeForUiTests by intellijPlatformTesting.runIde.registering {
 
     plugins {
         robotServerPlugin(Constraints.LATEST_VERSION)
+    }
+}
+
+versionCatalogUpdate {
+    keep {
+        keepUnusedPlugins.set(true) // taskinfo is unused but that is fine
     }
 }

@@ -1,19 +1,21 @@
 [versions]
-jupiter = "5.10.3"
 changelog = "2.2.1"
 intelliJPlatform = "2.0.1"
-kotlin = "1.9.24"
+jupiter = "5.10.3"
+kotlin = "2.0.10"
 kover = "0.8.3"
-remoteRobot = "0.11.23"
 ktlint = "12.1.1"
+remoteRobot = "0.11.23"
 taskinfo = "2.2.0"
 testLogger = "4.0.0"
+versionPlugin = "0.51.0"
+versionUpdate = "0.8.4"
 
 [libraries]
-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "jupiter" }
-jupiterEngine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "jupiter" }
-remoteRobot = { group = "com.intellij.remoterobot", name = "remote-robot", version.ref = "remoteRobot" }
-remoteRobotFixtures = { group = "com.intellij.remoterobot", name = "remote-fixtures", version.ref = "remoteRobot" }
+jupiter = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
+jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jupiter" }
+remoteRobot = { module = "com.intellij.remoterobot:remote-robot", version.ref = "remoteRobot" }
+remoteRobotFixtures = { module = "com.intellij.remoterobot:remote-fixtures", version.ref = "remoteRobot" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
@@ -21,5 +23,7 @@ intelliJPlatform = { id = "org.jetbrains.intellij.platform", version.ref = "inte
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
-#taskinfo = { id = "org.barfuin.gradle.taskinfo", version.ref = "taskinfo" }
+taskinfo = { id = "org.barfuin.gradle.taskinfo", version.ref = "taskinfo" }
 testLogger = { id = "com.adarshr.test-logger", version.ref = "testLogger" }
+versionPlugin = { id = "com.github.ben-manes.versions", version.ref = "versionPlugin" }
+versionUpdate = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionUpdate" }

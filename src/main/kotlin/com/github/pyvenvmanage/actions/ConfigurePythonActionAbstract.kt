@@ -50,7 +50,9 @@ abstract class ConfigurePythonActionAbstract : AnAction() {
         val sdk: Sdk =
             PyConfigurableInterpreterList
                 .getInstance(project)
-                .model.projectSdks.values
+                .model
+                .projectSdks
+                .values
                 .firstOrNull { it.homePath == pythonExecutable }
                 ?: (SdkConfigurationUtil.createAndAddSDK(pythonExecutable, PythonSdkType.getInstance()) ?: return)
 
