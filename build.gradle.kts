@@ -1,7 +1,7 @@
-
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.Constants.Constraints
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.kover)
     alias(libs.plugins.ktlint)
-//    alias(libs.plugins.taskinfo) // cache incompatible https://gitlab.com/barfuin/gradle-taskinfo/-/issues/23
+//    alias(libs.plugins.taskinfo) // cache incompatible - https://gitlab.com/barfuin/gradle-taskinfo/-/issues/23
     alias(libs.plugins.testLogger)
     alias(libs.plugins.versionPlugin)
     alias(libs.plugins.versionUpdate)
@@ -18,7 +18,7 @@ plugins {
 
 group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
-
+val platformVersion = providers.gradleProperty("platformVersion").get()
 kotlin {
     jvmToolchain(17)
 }
@@ -36,10 +36,9 @@ dependencies {
     testRuntimeOnly("junit:junit:4.13.2") // https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1711
     testImplementation(libs.remoteRobot)
     testImplementation(libs.remoteRobotFixtures)
-
     intellijPlatform {
-        create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
-        plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
+        pycharmCommunity(platformVersion)
+        bundledPlugin("PythonCore")
         instrumentationTools()
         pluginVerifier()
         zipSigner()
@@ -99,10 +98,16 @@ intellijPlatform {
                 )
             }
     }
-
     pluginVerification {
         ides {
-            recommended()
+            // target supporting the following platforms
+            ide(IntelliJPlatformType.PyCharmCommunity, platformVersion)
+            ide(IntelliJPlatformType.PyCharmProfessional, platformVersion)
+            ide(IntelliJPlatformType.IntellijIdeaCommunity, platformVersion)
+            ide(IntelliJPlatformType.IntellijIdeaUltimate, platformVersion)
+            ide(IntelliJPlatformType.GoLand, platformVersion)
+            ide(IntelliJPlatformType.CLion, platformVersion)
+            ide(IntelliJPlatformType.RustRover, platformVersion)
         }
     }
 }

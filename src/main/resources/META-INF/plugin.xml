@@ -3,7 +3,7 @@
     <name>PyVenv Manage 2</name>
     <vendor url="https://github.com/pyvenvmanage/PyVenvManage">pyvenvmanage</vendor>
 
-    <depends>PythonCore</depends>
+    <depends>com.intellij.modules.python</depends>
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
