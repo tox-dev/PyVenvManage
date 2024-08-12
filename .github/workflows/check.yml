@@ -45,10 +45,10 @@ jobs:
         id: properties
         shell: bash
         run: |
-          PROPERTIES="$(./gradlew properties --console=plain -q)"          
+          PROPERTIES="$(./gradlew properties --console=plain -q)"
           VERSION="$(echo "$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "pluginVerifierHomeDir=~/.pluginVerifier" >> $GITHUB_OUTPUT          
+          echo "pluginVerifierHomeDir=~/.pluginVerifier" >> $GITHUB_OUTPUT
           CHANGELOG="$(./gradlew getChangelog --unreleased --no-header --console=plain -q)"
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
