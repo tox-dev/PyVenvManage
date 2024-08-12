@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Extend compatibility for PyCharm Professional
+
 ## [2.0.0] - 2024-08-12
 
 ### Changed
