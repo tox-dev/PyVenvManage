@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.0.1] - 2024-08-12
+
 - Extend compatibility for PyCharm Professional
 - Fix Icon provider did not survive migration to v2
 
@@ -63,7 +65,8 @@
 
 - Removed the usage of the deprecated PythonSdkType.getPythonExecutable API
 
-[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.4.0...v2.0.0
 [1.4.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.4...v1.4.0
 [1.3.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.3...v1.3.4
