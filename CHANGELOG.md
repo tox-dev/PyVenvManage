@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - Extend compatibility for PyCharm Professional
+- Fix Icon provider did not survive migration to v2
 
 ## [2.0.0] - 2024-08-12
 
