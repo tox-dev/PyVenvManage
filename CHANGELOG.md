@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.0.0] - 2024-08-12
+
 ### Changed
 
 - Improve action menu label and description
@@ -57,3 +59,12 @@
 ### Fixed
 
 - Removed the usage of the deprecated PythonSdkType.getPythonExecutable API
+
+[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.4.0...v2.0.0
+[1.4.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.4...v1.4.0
+[1.3.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.3...v1.3.4
+[1.3.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.2...v1.3.3
+[1.3.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.1...v1.3.2
+[1.3.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.0...v1.3.1
+[1.3.0]: https://github.com/pyvenvmanage/PyVenvManage/commits/v1.3.0
