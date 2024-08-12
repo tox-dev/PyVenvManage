@@ -10,6 +10,9 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    environment:
+      name: release
+      url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
     steps:
       - name: Checkout git repository
         uses: actions/checkout@v4
