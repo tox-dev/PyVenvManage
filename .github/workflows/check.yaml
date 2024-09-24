@@ -17,6 +17,11 @@ jobs:
       changelog: ${{ steps.properties.outputs.changelog }}
       pluginVerifierHomeDir: ${{ steps.properties.outputs.pluginVerifierHomeDir }}qq
     steps:
+      - name: Maximize Build Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          large-packages: false
       - name: Checkout git repository
         uses: actions/checkout@v4
       - name: Set up Java
@@ -94,6 +99,11 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
+      - name: Maximize Build Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          large-packages: false
       - name: Checkout git repository
         uses: actions/checkout@v4
       - name: Set up Java
@@ -116,6 +126,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Maximize Build Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          large-packages: false
       - name: Checkout git repository
         uses: actions/checkout@v4
       - name: Remove old release drafts
