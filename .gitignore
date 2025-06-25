@@ -1,6 +1,5 @@
 .gradle
 .idea
 .intellijPlatform
-build
-.DS_Store
 .kotlin
+build
