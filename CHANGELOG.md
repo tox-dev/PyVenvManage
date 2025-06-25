@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2.1.0] - 2025-06-25
+
+- Add support for showing python version in tree view by @andrask in https://github.com/tox-dev/PyVenvManage/pull/51
+
 ## [2.0.1] - 2024-08-12
 
 - Extend compatibility for PyCharm Professional
@@ -65,7 +69,8 @@
 
 - Removed the usage of the deprecated PythonSdkType.getPythonExecutable API
 
-[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.4.0...v2.0.0
 [1.4.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.4...v1.4.0
