@@ -97,14 +97,6 @@ class UITest {
         @AfterAll
         @JvmStatic
         fun cleanUp() {
-//            CommonSteps(remoteRobot).closeProject()
-//            // remove the test project from recent
-//            remoteRobot.welcomeFrame {
-//                findText("demo").click(MouseButton.RIGHT_BUTTON)
-//                remoteRobot.actionMenuItem("Remove from Recent Projects…").click()
-//                button("Remove").click()
-//            }
-//            tmpDir.toFile().deleteRecursively()
         }
     }
 
@@ -114,7 +106,7 @@ class UITest {
             with(projectViewTree) {
                 findText("ve").click(MouseButton.RIGHT_BUTTON)
                 remoteRobot.actionMenuItem("Set as Project Interpreter").click()
-//                findText("Updated SDK for project demo to:")
+                findText("Updated SDK for project demo to:")
                 // wait for indexing to finish
                 waitFor(ofMinutes(1)) { isDumbMode().not() }
             }
@@ -127,7 +119,7 @@ class UITest {
             with(projectViewTree) {
                 findText("ve").click(MouseButton.RIGHT_BUTTON)
                 remoteRobot.actionMenuItem("Set as Module Interpreter").click()
-//                findText("Updated SDK for module demo to:")
+                findText("Updated SDK for module demo to:")
                 // wait for indexing to finish
                 waitFor(ofMinutes(1)) { isDumbMode().not() }
             }

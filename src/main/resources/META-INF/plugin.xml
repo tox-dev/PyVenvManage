@@ -7,7 +7,7 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <notificationGroup id="SDK changed notification"
+        <notificationGroup id="Python SDK change"
                            displayType="BALLOON"/>
         <projectViewNodeDecorator implementation="com.github.pyvenvmanage.VenvProjectViewNodeDecorator"/>
     </extensions>
