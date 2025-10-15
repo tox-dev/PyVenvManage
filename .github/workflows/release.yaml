@@ -15,7 +15,7 @@ jobs:
       url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
     steps:
       - name: Checkout git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.event.release.tag_name }}
       - name: Maximize Build Space
