@@ -27,18 +27,23 @@ abstract class ConfigurePythonActionAbstract : AnAction() {
         //  - any files within the binary folder.
         e.presentation.isEnabledAndVisible =
             when (val selectedPath = e.getData(CommonDataKeys.VIRTUAL_FILE)) {
-                null -> false
-                else ->
+                null -> {
+                    false
+                }
+
+                else -> {
                     when (selectedPath.isDirectory) {
                         true -> {
                             // check if there is a python executable available under this folder -> name match for binary
                             PythonSdkUtil.getPythonExecutable(selectedPath.path) != null
                         }
+
                         false -> {
                             // check for presence of the activate_this.py + activate alongside or pyvenv.cfg above
                             PythonSdkUtil.isVirtualEnv(selectedPath.path)
                         }
                     }
+                }
             }
     }
 

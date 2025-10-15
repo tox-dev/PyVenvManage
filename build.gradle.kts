@@ -30,16 +30,15 @@ repositories {
 }
 
 dependencies {
-    testImplementation("com.squareup.okhttp3:okhttp:4.12.0") // needed for connecting to remote robot
     testImplementation(libs.jupiter)
     testRuntimeOnly(libs.jupiterEngine)
-    testRuntimeOnly("junit:junit:4.13.2") // https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/1711
+    testRuntimeOnly(libs.junitPlatformLauncher)
+    testRuntimeOnly("junit:junit:4.13.2") // legacy JUnit 4 support
     testImplementation(libs.remoteRobot)
     testImplementation(libs.remoteRobotFixtures)
     intellijPlatform {
         pycharmCommunity(platformVersion)
         bundledPlugin("PythonCore")
-        instrumentationTools()
         pluginVerifier()
         zipSigner()
         testFramework(TestFrameworkType.JUnit5)
@@ -101,13 +100,13 @@ intellijPlatform {
     pluginVerification {
         ides {
             // target supporting the following platforms
-            ide(IntelliJPlatformType.PyCharmCommunity, platformVersion)
-            ide(IntelliJPlatformType.PyCharmProfessional, platformVersion)
-            ide(IntelliJPlatformType.IntellijIdeaCommunity, platformVersion)
-            ide(IntelliJPlatformType.IntellijIdeaUltimate, platformVersion)
-            ide(IntelliJPlatformType.GoLand, platformVersion)
-            ide(IntelliJPlatformType.CLion, platformVersion)
-            ide(IntelliJPlatformType.RustRover, platformVersion)
+            create(IntelliJPlatformType.PyCharmCommunity, platformVersion)
+            create(IntelliJPlatformType.PyCharmProfessional, platformVersion)
+            create(IntelliJPlatformType.IntellijIdeaCommunity, platformVersion)
+            create(IntelliJPlatformType.IntellijIdeaUltimate, platformVersion)
+            create(IntelliJPlatformType.GoLand, platformVersion)
+            create(IntelliJPlatformType.CLion, platformVersion)
+            create(IntelliJPlatformType.RustRover, platformVersion)
         }
     }
 }
@@ -164,6 +163,6 @@ val runIdeForUiTests by intellijPlatformTesting.runIde.registering {
 
 versionCatalogUpdate {
     keep {
-        keepUnusedPlugins.set(true) // taskinfo is unused but that is fine
+        keepUnusedVersions = true
     }
 }

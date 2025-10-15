@@ -1,21 +1,23 @@
 [versions]
-changelog = "2.2.1"
-intelliJPlatform = "2.0.1"
-jupiter = "5.10.3"
-kotlin = "2.0.10"
+changelog = "2.4.0"
+intelliJPlatform = "2.10.0"
+junitPlatformLauncher= "1.14.0"
+jupiter = "5.14.0"
+kotlin = "2.2.20"
 kover = "0.9.2"
-ktlint = "12.1.1"
+ktlint = "13.1.0"
 remoteRobot = "0.11.23"
 taskinfo = "2.2.0"
 testLogger = "4.0.0"
-versionPlugin = "0.51.0"
-versionUpdate = "0.8.4"
+versionPlugin = "0.53.0"
+versionUpdate = "1.0.1"
 
 [libraries]
 jupiter = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
 jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jupiter" }
 remoteRobot = { module = "com.intellij.remoterobot:remote-robot", version.ref = "remoteRobot" }
 remoteRobotFixtures = { module = "com.intellij.remoterobot:remote-fixtures", version.ref = "remoteRobot" }
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatformLauncher" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
