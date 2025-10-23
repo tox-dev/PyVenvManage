@@ -27,9 +27,7 @@ object VenvUtils {
     }
 
     @JvmStatic
-    fun getPythonVersionFromPyVenv(pyvenvCfgPath: Path): String {
-        val unknownVersion = "unknown"
-
+    fun getPythonVersionFromPyVenv(pyvenvCfgPath: Path): String? {
         val props = Properties()
 
         try {
@@ -37,14 +35,14 @@ object VenvUtils {
                 props.load(reader)
             }
         } catch (e: IOException) {
-            return unknownVersion // file could not be read
+            return null // file could not be read
         }
 
-        val version = props.getProperty("version_info")
+        val version = props.getProperty("version")
         if (version != null) {
             return version.trim { it <= ' ' }
         }
 
-        return unknownVersion
+        return null
     }
 }
