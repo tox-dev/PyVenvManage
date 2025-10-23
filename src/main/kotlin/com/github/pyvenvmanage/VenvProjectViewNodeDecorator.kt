@@ -15,10 +15,12 @@ class VenvProjectViewNodeDecorator : ProjectViewNodeDecorator {
         val pyVenvCfgPath = VenvUtils.getPyVenvCfg(node.getVirtualFile())
         if (pyVenvCfgPath != null) {
             val pythonVersion = VenvUtils.getPythonVersionFromPyVenv(pyvenvCfgPath = pyVenvCfgPath)
-            val fileName: String? = data.getPresentableText()
-            data.clearText()
-            data.addText(fileName, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-            data.addText(" [" + pythonVersion + "]", SimpleTextAttributes.GRAY_ATTRIBUTES)
+            if (pythonVersion != null) {
+                val fileName: String? = data.getPresentableText()
+                data.clearText()
+                data.addText(fileName, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                data.addText(" [$pythonVersion]", SimpleTextAttributes.GRAY_ATTRIBUTES)
+            }
             data.setIcon(Virtualenv)
         }
     }
