@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2.1.2] - 2025-10-23
+
+- Fix python version display (#76) by @andrask in https://github.com/tox-dev/PyVenvManage/pull/77
+
 ## [2.1.0] - 2025-06-25
 
 - Add support for showing python version in tree view by @andrask in https://github.com/tox-dev/PyVenvManage/pull/51
@@ -69,7 +73,8 @@
 
 - Removed the usage of the deprecated PythonSdkType.getPythonExecutable API
 
-[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.2...HEAD
+[2.1.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.0...v2.1.2
 [2.1.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.4.0...v2.0.0
