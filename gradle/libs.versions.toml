@@ -1,6 +1,6 @@
 [versions]
 changelog = "2.4.0"
-intelliJPlatform = "2.10.2"
+intelliJPlatform = "2.10.4"
 junitPlatformLauncher= "6.0.0"
 jupiter = "6.0.0"
 kotlin = "2.2.21"
