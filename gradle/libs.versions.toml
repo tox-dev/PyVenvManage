@@ -1,5 +1,5 @@
 [versions]
-changelog = "2.4.0"
+changelog = "2.5.0"
 intelliJPlatform = "2.10.4"
 junitPlatformLauncher= "6.0.0"
 jupiter = "6.0.1"
