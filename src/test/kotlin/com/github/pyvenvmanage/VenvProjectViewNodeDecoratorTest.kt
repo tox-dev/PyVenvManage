@@ -37,14 +37,20 @@ class VenvProjectViewNodeDecoratorTest {
 
     @Nested
     inner class DecorateTest {
+        private lateinit var versionCache: VenvVersionCache
+
         @BeforeEach
         fun setUpMocks() {
             mockkObject(VenvUtils)
+            versionCache = mockk(relaxed = true)
+            mockkObject(VenvVersionCache.Companion)
+            every { VenvVersionCache.getInstance() } returns versionCache
         }
 
         @AfterEach
         fun tearDown() {
             unmockkObject(VenvUtils)
+            unmockkObject(VenvVersionCache.Companion)
         }
 
         @Test
@@ -75,6 +81,7 @@ class VenvProjectViewNodeDecoratorTest {
             Files.writeString(pyvenvCfgPath, "version = 3.11.0")
 
             every { VenvUtils.getPyVenvCfg(virtualFile) } returns pyvenvCfgPath
+            every { versionCache.getVersion(pyvenvCfgPath.toString()) } returns "3.11.0"
             every { data.presentableText } returns "venv"
 
             decorator.decorate(node, data)
@@ -90,6 +97,7 @@ class VenvProjectViewNodeDecoratorTest {
             Files.writeString(pyvenvCfgPath, "version = 3.11.0")
 
             every { VenvUtils.getPyVenvCfg(virtualFile) } returns pyvenvCfgPath
+            every { versionCache.getVersion(pyvenvCfgPath.toString()) } returns "3.11.0"
             every { data.presentableText } returns "venv"
 
             decorator.decorate(node, data)
@@ -107,6 +115,7 @@ class VenvProjectViewNodeDecoratorTest {
             Files.writeString(pyvenvCfgPath, "home = /usr/bin")
 
             every { VenvUtils.getPyVenvCfg(virtualFile) } returns pyvenvCfgPath
+            every { versionCache.getVersion(pyvenvCfgPath.toString()) } returns null
             every { data.presentableText } returns "venv"
 
             decorator.decorate(node, data)
@@ -117,21 +126,22 @@ class VenvProjectViewNodeDecoratorTest {
         }
 
         @Test
-        fun `caches version between calls`(
+        fun `uses cache for version lookup`(
             @TempDir tempDir: Path,
         ) {
             val pyvenvCfgPath = tempDir.resolve("pyvenv.cfg")
             Files.writeString(pyvenvCfgPath, "version = 3.11.0")
 
             every { VenvUtils.getPyVenvCfg(virtualFile) } returns pyvenvCfgPath
+            every { versionCache.getVersion(pyvenvCfgPath.toString()) } returns "3.11.0"
             every { data.presentableText } returns "venv"
 
             // Call twice
             decorator.decorate(node, data)
             decorator.decorate(node, data)
 
-            // Version should only be read once due to caching
-            verify(exactly = 1) { VenvUtils.getPythonVersionFromPyVenv(pyvenvCfgPath) }
+            // Version cache should be called twice (caching is handled by the cache service)
+            verify(exactly = 2) { versionCache.getVersion(pyvenvCfgPath.toString()) }
         }
     }
 }
