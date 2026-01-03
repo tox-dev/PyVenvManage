@@ -68,16 +68,6 @@ jobs:
       matrix:
         ide: [PC, PY, IC, IU, GO, CL, RR]
     steps:
-      - name: Maximize Build Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          large-packages: true
-          android: true
-          dotnet: true
-          haskell: true
-          docker-images: true
-          swap-storage: false
       - name: Checkout git repository
         uses: actions/checkout@v6
       - name: Set up Java
