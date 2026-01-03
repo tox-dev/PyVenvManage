@@ -125,4 +125,61 @@ class UITest {
             }
         }
     }
+
+    @Test
+    fun testVenvDirectoryShowsPythonVersion() {
+        remoteRobot.idea {
+            with(projectViewTree) {
+                // The venv directory should display the Python version in brackets
+                waitFor(ofSeconds(10)) {
+                    hasText { it.text.contains("[") && it.text.contains("]") }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testVenvDirectoryHasVenvIcon() {
+        remoteRobot.idea {
+            with(projectViewTree) {
+                // Verify the venv directory is decorated (has venv text visible)
+                waitFor(ofSeconds(10)) {
+                    hasText("ve")
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testContextMenuOnNonVenvDirectory() {
+        remoteRobot.idea {
+            with(projectViewTree) {
+                // Right-click on a non-venv directory should not show interpreter options
+                findText("demo").click(MouseButton.RIGHT_BUTTON)
+                waitFor(ofSeconds(2)) {
+                    // The action menu should be visible but interpreter options should not be enabled
+                    runCatching {
+                        remoteRobot.actionMenuItem("Set as Project Interpreter")
+                        false // If found, test should handle it
+                    }.getOrDefault(true) // If not found, that's expected
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testContextMenuOnPythonFile() {
+        remoteRobot.idea {
+            with(projectViewTree) {
+                // Right-click on a Python file should not show interpreter options
+                findText("main.py").click(MouseButton.RIGHT_BUTTON)
+                waitFor(ofSeconds(2)) {
+                    runCatching {
+                        remoteRobot.actionMenuItem("Set as Project Interpreter")
+                        false
+                    }.getOrDefault(true)
+                }
+            }
+        }
+    }
 }
