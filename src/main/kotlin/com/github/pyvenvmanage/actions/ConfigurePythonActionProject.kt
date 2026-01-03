@@ -10,8 +10,8 @@ class ConfigurePythonActionProject : ConfigurePythonActionAbstract() {
         project: Project,
         selectedPath: VirtualFile,
         sdk: Sdk,
-    ): String {
+    ): SetSdkResult {
         SdkConfigurationUtil.setDirectoryProjectSdk(project, sdk)
-        return "project ${project.name}"
+        return SetSdkResult.Success("project ${project.name}")
     }
 }
