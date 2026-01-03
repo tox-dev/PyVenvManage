@@ -69,6 +69,11 @@ jobs:
         with:
           tool-cache: false
           large-packages: true
+          android: true
+          dotnet: true
+          haskell: true
+          docker-images: true
+          swap-storage: false
       - name: Checkout git repository
         uses: actions/checkout@v6
       - name: Set up Java
@@ -84,7 +89,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ needs.build.outputs.pluginVerifierHomeDir }}/ides
-          key: plugin-verifier-${{ hashFiles('build/listProductsReleases.txt') }}
+          key: plugin-verifier-${{ hashFiles('gradle.properties', 'build.gradle.kts') }}
       - name: Run verification
         run: ./gradlew verifyPlugin -Dplugin.verifier.home.dir=${{ needs.build.outputs.pluginVerifierHomeDir }}
       - name: Collect verification result
@@ -99,11 +104,6 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - name: Maximize Build Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          large-packages: false
       - name: Checkout git repository
         uses: actions/checkout@v6
       - name: Set up Java
@@ -126,11 +126,6 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Maximize Build Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          large-packages: false
       - name: Checkout git repository
         uses: actions/checkout@v6
       - name: Remove old release drafts
