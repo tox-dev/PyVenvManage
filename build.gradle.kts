@@ -31,6 +31,7 @@ repositories {
 
 dependencies {
     testImplementation(libs.jupiter)
+    testImplementation(libs.mockk)
     testRuntimeOnly(libs.jupiterEngine)
     testRuntimeOnly(libs.junitPlatformLauncher)
     testRuntimeOnly("junit:junit:4.13.2") // legacy JUnit 4 support

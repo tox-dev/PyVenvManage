@@ -4,6 +4,7 @@ intelliJPlatform = "2.10.5"
 junitPlatformLauncher= "6.0.0"
 jupiter = "6.0.1"
 kotlin = "2.3.0"
+mockk = "1.14.7"
 kover = "0.9.4"
 ktlint = "14.0.1"
 remoteRobot = "0.11.23"
@@ -15,6 +16,7 @@ versionUpdate = "1.0.1"
 [libraries]
 jupiter = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
 jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jupiter" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 remoteRobot = { module = "com.intellij.remoterobot:remote-robot", version.ref = "remoteRobot" }
 remoteRobotFixtures = { module = "com.intellij.remoterobot:remote-fixtures", version.ref = "remoteRobot" }
 junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatformLauncher" }
