@@ -99,14 +99,21 @@ intellijPlatform {
     }
     pluginVerification {
         ides {
-            // target supporting the following platforms
-            create(IntelliJPlatformType.PyCharmCommunity, platformVersion)
-            create(IntelliJPlatformType.PyCharmProfessional, platformVersion)
-            create(IntelliJPlatformType.IntellijIdeaCommunity, platformVersion)
-            create(IntelliJPlatformType.IntellijIdeaUltimate, platformVersion)
-            create(IntelliJPlatformType.GoLand, platformVersion)
-            create(IntelliJPlatformType.CLion, platformVersion)
-            create(IntelliJPlatformType.RustRover, platformVersion)
+            val verifyIde = providers.gradleProperty("verifyIde").orNull
+            val ideTypes = if (verifyIde != null) {
+                listOf(IntelliJPlatformType.fromCode(verifyIde))
+            } else {
+                listOf(
+                    IntelliJPlatformType.PyCharmCommunity,
+                    IntelliJPlatformType.PyCharmProfessional,
+                    IntelliJPlatformType.IntellijIdeaCommunity,
+                    IntelliJPlatformType.IntellijIdeaUltimate,
+                    IntelliJPlatformType.GoLand,
+                    IntelliJPlatformType.CLion,
+                    IntelliJPlatformType.RustRover,
+                )
+            }
+            ideTypes.forEach { create(it, platformVersion) }
         }
     }
 }

@@ -60,9 +60,13 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
   verify:
-    name: Verify plugin
+    name: Verify (${{ matrix.ide }})
     needs: [build]
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ide: [PC, PY, IC, IU, GO, CL, RR]
     steps:
       - name: Maximize Build Space
         uses: jlumbroso/free-disk-space@main
@@ -89,14 +93,14 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ needs.build.outputs.pluginVerifierHomeDir }}/ides
-          key: plugin-verifier-${{ hashFiles('gradle.properties', 'build.gradle.kts') }}
+          key: plugin-verifier-${{ matrix.ide }}-${{ hashFiles('gradle.properties', 'build.gradle.kts') }}
       - name: Run verification
-        run: ./gradlew verifyPlugin -Dplugin.verifier.home.dir=${{ needs.build.outputs.pluginVerifierHomeDir }}
+        run: ./gradlew verifyPlugin -PverifyIde=${{ matrix.ide }} -Dplugin.verifier.home.dir=${{ needs.build.outputs.pluginVerifierHomeDir }}
       - name: Collect verification result
         if: ${{ always() }}
         uses: actions/upload-artifact@v6
         with:
-          name: pluginVerifier-result
+          name: pluginVerifier-result-${{ matrix.ide }}
           path: ${{ github.workspace }}/build/reports/pluginVerifier
 
   test:
