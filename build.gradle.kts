@@ -100,19 +100,20 @@ intellijPlatform {
     pluginVerification {
         ides {
             val verifyIde = providers.gradleProperty("verifyIde").orNull
-            val ideTypes = if (verifyIde != null) {
-                listOf(IntelliJPlatformType.fromCode(verifyIde))
-            } else {
-                listOf(
-                    IntelliJPlatformType.PyCharmCommunity,
-                    IntelliJPlatformType.PyCharmProfessional,
-                    IntelliJPlatformType.IntellijIdeaCommunity,
-                    IntelliJPlatformType.IntellijIdeaUltimate,
-                    IntelliJPlatformType.GoLand,
-                    IntelliJPlatformType.CLion,
-                    IntelliJPlatformType.RustRover,
-                )
-            }
+            val ideTypes =
+                if (verifyIde != null) {
+                    listOf(IntelliJPlatformType.fromCode(verifyIde))
+                } else {
+                    listOf(
+                        IntelliJPlatformType.PyCharmCommunity,
+                        IntelliJPlatformType.PyCharmProfessional,
+                        IntelliJPlatformType.IntellijIdeaCommunity,
+                        IntelliJPlatformType.IntellijIdeaUltimate,
+                        IntelliJPlatformType.GoLand,
+                        IntelliJPlatformType.CLion,
+                        IntelliJPlatformType.RustRover,
+                    )
+                }
             ideTypes.forEach { create(it, platformVersion) }
         }
     }
