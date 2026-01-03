@@ -10,6 +10,11 @@
         <notificationGroup id="Python SDK change"
                            displayType="BALLOON"/>
         <projectViewNodeDecorator implementation="com.github.pyvenvmanage.VenvProjectViewNodeDecorator"/>
+        <applicationConfigurable
+                parentId="tools"
+                instance="com.github.pyvenvmanage.settings.PyVenvManageConfigurable"
+                id="com.github.pyvenvmanage.settings.PyVenvManageConfigurable"
+                displayName="PyVenv Manage"/>
     </extensions>
 
     <actions>
