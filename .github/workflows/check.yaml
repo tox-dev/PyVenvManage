@@ -15,7 +15,8 @@ jobs:
     outputs:
       version: ${{ steps.properties.outputs.version }}
       changelog: ${{ steps.properties.outputs.changelog }}
-      pluginVerifierHomeDir: ${{ steps.properties.outputs.pluginVerifierHomeDir }}qq
+      pluginVerifierHomeDir: ${{ steps.properties.outputs.pluginVerifierHomeDir }}
+      platformVersion: ${{ steps.properties.outputs.platformVersion }}
     steps:
       - name: Maximize Build Space
         uses: jlumbroso/free-disk-space@main
@@ -53,22 +54,29 @@ jobs:
           PROPERTIES="$(./gradlew properties --console=plain -q)"
           VERSION="$(echo "$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "pluginVerifierHomeDir=~/.pluginVerifier" >> $GITHUB_OUTPUT
+          echo "pluginVerifierHomeDir=$HOME/.pluginVerifier" >> $GITHUB_OUTPUT
+          echo "platformVersion=$(echo "$PROPERTIES" | grep "^platformVersion:" | cut -f2- -d ' ')" >> $GITHUB_OUTPUT
           CHANGELOG="$(./gradlew getChangelog --unreleased --no-header --console=plain -q)"
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
   verify:
-    name: Verify plugin
+    name: Verify (${{ matrix.ide }})
     needs: [build]
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ide: [PC, PY, IC, IU, GO, CL, RR]
     steps:
-      - name: Maximize Build Space
+      - name: Free disk space
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: false
           large-packages: false
+          android: true
+          dotnet: true
       - name: Checkout git repository
         uses: actions/checkout@v6
       - name: Set up Java
@@ -80,18 +88,19 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
         with:
           validate-wrappers: false
+          cache-read-only: true
       - name: Set up verifier cache
         uses: actions/cache@v5
         with:
           path: ${{ needs.build.outputs.pluginVerifierHomeDir }}/ides
-          key: plugin-verifier-${{ hashFiles('build/listProductsReleases.txt') }}
+          key: plugin-verifier-${{ matrix.ide }}-${{ needs.build.outputs.platformVersion }}
       - name: Run verification
-        run: ./gradlew verifyPlugin -Dplugin.verifier.home.dir=${{ needs.build.outputs.pluginVerifierHomeDir }}
+        run: ./gradlew verifyPlugin -PverifyIde=${{ matrix.ide }} -Dplugin.verifier.home.dir=${{ needs.build.outputs.pluginVerifierHomeDir }}
       - name: Collect verification result
         if: ${{ always() }}
         uses: actions/upload-artifact@v6
         with:
-          name: pluginVerifier-result
+          name: pluginVerifier-result-${{ matrix.ide }}
           path: ${{ github.workspace }}/build/reports/pluginVerifier
 
   test:
@@ -99,11 +108,6 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - name: Maximize Build Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          large-packages: false
       - name: Checkout git repository
         uses: actions/checkout@v6
       - name: Set up Java
@@ -115,6 +119,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
         with:
           validate-wrappers: false
+          cache-read-only: true
       - name: Run linter
         run: ./gradlew ktlintCheck
 
@@ -126,11 +131,6 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Maximize Build Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          large-packages: false
       - name: Checkout git repository
         uses: actions/checkout@v6
       - name: Remove old release drafts
