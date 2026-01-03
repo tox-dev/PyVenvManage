@@ -1,4 +1,4 @@
-<idea-plugin>
+<idea-plugin require-restart="false">
     <id>com.github.pyvenvmanage.pyvenv</id>
     <name>PyVenv Manage 2</name>
     <vendor url="https://github.com/pyvenvmanage/PyVenvManage">pyvenvmanage</vendor>

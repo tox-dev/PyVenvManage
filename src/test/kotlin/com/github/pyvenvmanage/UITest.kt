@@ -9,7 +9,6 @@ import java.time.Duration.ofSeconds
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 
-import kotlin.io.path.name
 import org.assertj.swing.core.MouseButton
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -20,15 +19,17 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.TestWatcher
 
 import com.intellij.remoterobot.RemoteRobot
-import com.intellij.remoterobot.fixtures.JTreeFixture
 import com.intellij.remoterobot.search.locators.byXpath
 import com.intellij.remoterobot.stepsProcessing.StepLogger
 import com.intellij.remoterobot.stepsProcessing.StepWorker
 import com.intellij.remoterobot.utils.waitFor
 
+import com.github.pyvenvmanage.pages.IdeaFrame
 import com.github.pyvenvmanage.pages.actionMenuItem
 import com.github.pyvenvmanage.pages.dialog
+import com.github.pyvenvmanage.pages.hasActionMenuItem
 import com.github.pyvenvmanage.pages.idea
+import com.github.pyvenvmanage.pages.pressEscape
 import com.github.pyvenvmanage.pages.welcomeFrame
 
 @ExtendWith(UITest.IdeTestWatcher::class)
@@ -56,6 +57,9 @@ class UITest {
         fun startIdea() {
             val base = Path.of(System.getProperty("user.home"), "projects")
             Files.createDirectories(base)
+            Files.list(base).filter { it.fileName.toString().startsWith("ui-test") }.forEach {
+                it.toFile().deleteRecursively()
+            }
             tmpDir = Files.createTempDirectory(base, "ui-test")
             // create test project
             val demo = Paths.get(tmpDir.toString(), "demo")
@@ -67,30 +71,23 @@ class UITest {
             val process = ProcessBuilder("python", "-m", "venv", venv, "--without-pip")
             assert(process.start().waitFor() == 0)
 
-            // ./gradlew runIdeForUiTests requires already running, so just wait to connect
             StepWorker.registerProcessor(StepLogger())
-            remoteRobot = RemoteRobot("http://localhost:8082")
-            waitFor(ofSeconds(20), ofSeconds(5)) {
-                runCatching {
-                    remoteRobot.callJs<Boolean>("true")
-                }.getOrDefault(false)
-            }
-            // open test project
+            remoteRobot = RemoteRobot("http://127.0.0.1:8082")
+            Thread.sleep(10000)
             remoteRobot.welcomeFrame {
-                openLink.click()
+                openButton.click()
                 dialog("Open File or Project") {
-                    button(byXpath("//div[@myicon='refresh.svg']")).click()
+                    val pathField = textField(byXpath("//div[@class='BorderlessTextField']"))
+                    pathField.click()
                     Thread.sleep(500)
-                    val tree = find<JTreeFixture>(byXpath("//div[@class='Tree']"))
-                    tree.expand(tree.getValueAtRow(0), *demo.map { it.name }.toTypedArray())
-                    tree.clickPath(tree.getValueAtRow(0), *demo.map { it.name }.toTypedArray(), fullMatch = true)
+                    pathField.runJs("component.setText('${demo.toString().replace("'", "\\'")}')")
+                    Thread.sleep(500)
                     button("OK").click()
                 }
             }
-            Thread.sleep(1000)
-            // wait for indexing to finish
-            remoteRobot.idea {
-                waitFor(ofMinutes(1)) { isDumbMode().not() }
+            Thread.sleep(5000)
+            remoteRobot.find<IdeaFrame>(timeout = ofMinutes(2)).apply {
+                waitFor(ofMinutes(2)) { isDumbMode().not() }
             }
         }
 
@@ -102,12 +99,11 @@ class UITest {
 
     @Test
     fun testSetProjectInterpreter() {
+        remoteRobot.pressEscape()
         remoteRobot.idea {
             with(projectViewTree) {
                 findText("ve").click(MouseButton.RIGHT_BUTTON)
                 remoteRobot.actionMenuItem("Set as Project Interpreter").click()
-                findText("Updated SDK for project demo to:")
-                // wait for indexing to finish
                 waitFor(ofMinutes(1)) { isDumbMode().not() }
             }
         }
@@ -115,12 +111,11 @@ class UITest {
 
     @Test
     fun testSetModuleInterpreter() {
+        remoteRobot.pressEscape()
         remoteRobot.idea {
             with(projectViewTree) {
                 findText("ve").click(MouseButton.RIGHT_BUTTON)
                 remoteRobot.actionMenuItem("Set as Module Interpreter").click()
-                findText("Updated SDK for module demo to:")
-                // wait for indexing to finish
                 waitFor(ofMinutes(1)) { isDumbMode().not() }
             }
         }
@@ -152,33 +147,30 @@ class UITest {
 
     @Test
     fun testContextMenuOnNonVenvDirectory() {
+        remoteRobot.pressEscape()
         remoteRobot.idea {
             with(projectViewTree) {
-                // Right-click on a non-venv directory should not show interpreter options
                 findText("demo").click(MouseButton.RIGHT_BUTTON)
-                waitFor(ofSeconds(2)) {
-                    // The action menu should be visible but interpreter options should not be enabled
-                    runCatching {
-                        remoteRobot.actionMenuItem("Set as Project Interpreter")
-                        false // If found, test should handle it
-                    }.getOrDefault(true) // If not found, that's expected
+                Thread.sleep(500)
+                assert(!remoteRobot.hasActionMenuItem("Set as Project Interpreter")) {
+                    "Non-venv directory should not show 'Set as Project Interpreter'"
                 }
+                remoteRobot.pressEscape()
             }
         }
     }
 
     @Test
     fun testContextMenuOnPythonFile() {
+        remoteRobot.pressEscape()
         remoteRobot.idea {
             with(projectViewTree) {
-                // Right-click on a Python file should not show interpreter options
                 findText("main.py").click(MouseButton.RIGHT_BUTTON)
-                waitFor(ofSeconds(2)) {
-                    runCatching {
-                        remoteRobot.actionMenuItem("Set as Project Interpreter")
-                        false
-                    }.getOrDefault(true)
+                Thread.sleep(500)
+                assert(!remoteRobot.hasActionMenuItem("Set as Project Interpreter")) {
+                    "Python file should not show 'Set as Project Interpreter'"
                 }
+                remoteRobot.pressEscape()
             }
         }
     }
