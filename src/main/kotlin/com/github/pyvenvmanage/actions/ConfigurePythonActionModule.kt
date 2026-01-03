@@ -11,9 +11,11 @@ class ConfigurePythonActionModule : ConfigurePythonActionAbstract() {
         project: Project,
         selectedPath: VirtualFile,
         sdk: Sdk,
-    ): String? {
-        val module = ProjectFileIndex.getInstance(project).getModuleForFile(selectedPath, false) ?: return null
+    ): SetSdkResult {
+        val module =
+            ProjectFileIndex.getInstance(project).getModuleForFile(selectedPath, false)
+                ?: return SetSdkResult.Error("No module found for ${selectedPath.name}")
         ModuleRootModificationUtil.setModuleSdk(module, sdk)
-        return "module ${module.name}"
+        return SetSdkResult.Success("module ${module.name}")
     }
 }

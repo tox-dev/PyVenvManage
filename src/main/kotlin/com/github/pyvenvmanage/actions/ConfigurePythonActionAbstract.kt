@@ -37,7 +37,13 @@ abstract class ConfigurePythonActionAbstract : AnAction() {
             e.getData(CommonDataKeys.VIRTUAL_FILE)?.let {
                 if (it.isDirectory) it else it.parent
             } ?: return
-        val pythonExecutable = PythonSdkUtil.getPythonExecutable(selectedPath.path) ?: return
+
+        val pythonExecutable = PythonSdkUtil.getPythonExecutable(selectedPath.path)
+        if (pythonExecutable == null) {
+            notifyError(project, "No Python executable found in ${selectedPath.name}")
+            return
+        }
+
         val sdk: Sdk =
             PyConfigurableInterpreterList
                 .getInstance(project)
@@ -45,18 +51,49 @@ abstract class ConfigurePythonActionAbstract : AnAction() {
                 .projectSdks
                 .values
                 .firstOrNull { it.homePath == pythonExecutable }
-                ?: (SdkConfigurationUtil.createAndAddSDK(pythonExecutable, PythonSdkType.getInstance()) ?: return)
+                ?: run {
+                    val newSdk = SdkConfigurationUtil.createAndAddSDK(pythonExecutable, PythonSdkType.getInstance())
+                    if (newSdk == null) {
+                        notifyError(project, "Failed to create SDK from $pythonExecutable")
+                        return
+                    }
+                    newSdk
+                }
 
-        val notificationFor = setSdk(project, selectedPath, sdk) ?: return
+        when (val result = setSdk(project, selectedPath, sdk)) {
+            is SetSdkResult.Success -> notifySuccess(project, result.target, sdk)
+            is SetSdkResult.Error -> notifyError(project, result.message)
+        }
+    }
+
+    private fun notifySuccess(
+        project: Project,
+        target: String,
+        sdk: Sdk,
+    ) {
         NotificationGroupManager
             .getInstance()
             .getNotificationGroup("Python SDK change")
             .createNotification(
                 "Python SDK Updated",
-                "Updated SDK for $notificationFor to:\n${sdk.name} " +
+                "Updated SDK for $target to:\n${sdk.name} " +
                     "of type ${sdk.interpreterType.toString().lowercase()} " +
                     sdk.executionType.toString().lowercase(),
                 NotificationType.INFORMATION,
+            ).notify(project)
+    }
+
+    private fun notifyError(
+        project: Project,
+        message: String,
+    ) {
+        NotificationGroupManager
+            .getInstance()
+            .getNotificationGroup("Python SDK change")
+            .createNotification(
+                "Python SDK Error",
+                message,
+                NotificationType.ERROR,
             ).notify(project)
     }
 
@@ -64,5 +101,15 @@ abstract class ConfigurePythonActionAbstract : AnAction() {
         project: Project,
         selectedPath: VirtualFile,
         sdk: Sdk,
-    ): String?
+    ): SetSdkResult
+
+    sealed class SetSdkResult {
+        data class Success(
+            val target: String,
+        ) : SetSdkResult()
+
+        data class Error(
+            val message: String,
+        ) : SetSdkResult()
+    }
 }
