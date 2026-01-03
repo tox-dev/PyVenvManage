@@ -22,6 +22,7 @@ val platformVersion = providers.gradleProperty("platformVersion").get()
 kotlin {
     jvmToolchain(17)
 }
+
 repositories {
     mavenCentral()
     intellijPlatform {
@@ -108,11 +109,6 @@ intellijPlatform {
                     listOf(
                         IntelliJPlatformType.PyCharmCommunity,
                         IntelliJPlatformType.PyCharmProfessional,
-                        IntelliJPlatformType.IntellijIdeaCommunity,
-                        IntelliJPlatformType.IntellijIdeaUltimate,
-                        IntelliJPlatformType.GoLand,
-                        IntelliJPlatformType.CLion,
-                        IntelliJPlatformType.RustRover,
                     )
                 }
             ideTypes.forEach { create(it, platformVersion) }
@@ -125,10 +121,23 @@ changelog {
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
 }
 kover {
+    currentProject {
+        sources {
+            excludeJava = true
+        }
+        instrumentation {
+            disabledForTestTasks.add("uiTest")
+        }
+    }
     reports {
         total {
             xml {
                 onCheck = true
+            }
+        }
+        verify {
+            rule {
+                minBound(100)
             }
         }
     }
@@ -144,8 +153,45 @@ tasks {
     buildSearchableOptions {
         enabled = false
     }
+    prepareJarSearchableOptions {
+        enabled = false
+    }
+    verifyPlugin {
+        System.getProperty("http.proxyHost")?.let { host ->
+            jvmArgs("-Dhttp.proxyHost=$host")
+            System.getProperty("http.proxyPort")?.let { jvmArgs("-Dhttp.proxyPort=$it") }
+        }
+        System.getProperty("https.proxyHost")?.let { host ->
+            jvmArgs("-Dhttps.proxyHost=$host")
+            System.getProperty("https.proxyPort")?.let { jvmArgs("-Dhttps.proxyPort=$it") }
+        }
+        System.getProperty("javax.net.ssl.trustStore")?.let { jvmArgs("-Djavax.net.ssl.trustStore=$it") }
+        System
+            .getProperty(
+                "javax.net.ssl.trustStorePassword",
+            )?.let { jvmArgs("-Djavax.net.ssl.trustStorePassword=$it") }
+    }
     test {
         useJUnitPlatform()
+        exclude("**/UITest.class")
+    }
+    val uiTest =
+        register<Test>("uiTest") {
+            description = "Runs UI tests (requires runIdeForUiTests to be running)"
+            group = "verification"
+            useJUnitPlatform()
+            include("**/UITest.class")
+            testClassesDirs = sourceSets["test"].output.classesDirs
+            classpath = sourceSets["test"].runtimeClasspath
+            shouldRunAfter(test)
+            jvmArgs(
+                "--add-opens=java.base/java.lang=ALL-UNNAMED",
+                "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+            )
+        }
+
+    runIde {
+        jvmArgs("-XX:+UnlockDiagnosticVMOptions")
     }
 }
 
@@ -153,15 +199,23 @@ val runIdeForUiTests by intellijPlatformTesting.runIde.registering {
     task {
         jvmArgumentProviders +=
             CommandLineArgumentProvider {
-                listOf(
-                    "-Drobot-server.port=8082",
-                    "-Dide.mac.message.dialogs.as.sheets=false",
-                    "-Djb.privacy.policy.text=<!--999.999-->",
-                    "-Djb.consents.confirmation.enabled=false",
-                    "-Didea.trust.all.projects=true",
-                    "-Dide.mac.file.chooser.native=false",
-                    "-Dide.show.tips.on.startup.default.value=false",
-                )
+                buildList {
+                    add("-Drobot-server.port=8082")
+                    add("-Djb.privacy.policy.text=<!--999.999-->")
+                    add("-Djb.consents.confirmation.enabled=false")
+                    add("-Didea.trust.all.projects=true")
+                    add("-Dide.show.tips.on.startup.default.value=false")
+                    val isMac =
+                        org.gradle.internal.os.OperatingSystem
+                            .current()
+                            .isMacOsX
+                    if (isMac) {
+                        add("-Dide.mac.message.dialogs.as.sheets=false")
+                        add("-Dide.mac.file.chooser.native=false")
+                        add("-DjbScreenMenuBar.enabled=false")
+                        add("-Dapple.laf.useScreenMenuBar=false")
+                    }
+                }
             }
     }
 

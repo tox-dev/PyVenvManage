@@ -19,8 +19,10 @@ streamlines this by enabling quick interpreter selection directly from the proje
 
 - **Quick interpreter switching**: Right-click any virtual environment folder to set it as your project or module
   interpreter instantly
-- **Visual identification**: Virtual environment folders display with a distinctive icon and Python version badge
-  (e.g., `venv [3.11.5]`) in the project view
+- **Visual identification**: Virtual environment folders display with a distinctive icon and customizable decoration
+  (e.g., `.venv [3.11.5 - CPython]`) in the project view
+- **Customizable decorations**: Configure which fields to show (Python version, implementation, system site-packages,
+  creator tool), their order, and the format via Settings
 - **Multi-IDE support**: Works with PyCharm (Community and Professional), IntelliJ IDEA, GoLand, CLion, and RustRover
 - **Smart detection**: Automatically detects Python virtual environments by recognizing `pyvenv.cfg` files
 - **Cached version display**: Python version information is cached for performance and automatically refreshed when
@@ -29,6 +31,8 @@ streamlines this by enabling quick interpreter selection directly from the proje
 <!-- Plugin description end -->
 
 ## Supported IDEs
+
+Version 2025.1 or later of:
 
 - PyCharm (Community and Professional)
 - IntelliJ IDEA (Community and Ultimate)
@@ -50,6 +54,20 @@ The official plugin page is at https://plugins.jetbrains.com/plugin/20536-pyvenv
 2. Right-click the virtual environment folder (e.g., `venv`, `.venv`, or any folder with a `pyvenv.cfg`)
 3. Select **Set as Project Interpreter** or **Set as Module Interpreter**
 4. The interpreter is configured instantly with a confirmation notification
+
+## Settings
+
+Open **Settings** -> **PyVenv Manage** to customize the virtual environment decoration display:
+
+- **Prefix/Suffix**: Characters surrounding the decoration (default: ` [` and `]`)
+- **Separator**: Text between fields (default: ` - `)
+- **Fields**: Enable, disable, and reorder which information to display:
+  - Python version (e.g., `3.14.2`)
+  - Python implementation (e.g., `CPython`)
+  - System site-packages indicator (`SYSTEM`)
+  - Virtual environment creator (e.g., `uv@0.9.21`)
+
+A live preview updates as you modify settings.
 
 ## License
 

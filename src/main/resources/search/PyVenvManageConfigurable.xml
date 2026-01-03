@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<searchableOptions>
+  <configurable id="com.github.pyvenvmanage.settings.PyVenvManageConfigurable" configurable_name="PyVenv Manage">
+    <option name="pyvenv" hit="PyVenv Manage" />
+    <option name="pyvenv manage" hit="PyVenv Manage" />
+    <option name="python" hit="PyVenv Manage" />
+    <option name="virtual environment" hit="PyVenv Manage" />
+    <option name="venv" hit="PyVenv Manage" />
+    <option name="decoration" hit="Python Interpreter Decoration" />
+    <option name="interpreter" hit="Python Interpreter Decoration" />
+    <option name="prefix" hit="Prefix:" />
+    <option name="suffix" hit="Suffix:" />
+    <option name="separator" hit="Separator:" />
+    <option name="fields" hit="Fields:" />
+    <option name="version" hit="Fields:" />
+    <option name="implementation" hit="Fields:" />
+    <option name="system site packages" hit="Fields:" />
+    <option name="creator" hit="Fields:" />
+  </configurable>
+</searchableOptions>
