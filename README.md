@@ -60,7 +60,7 @@ The official plugin page is at https://plugins.jetbrains.com/plugin/20536-pyvenv
 Open **Settings** -> **PyVenv Manage** to customize the virtual environment decoration display:
 
 - **Prefix/Suffix**: Characters surrounding the decoration (default: ` [` and `]`)
-- **Separator**: Text between fields (default: ` - `)
+- **Separator**: Text between fields (default: `-`)
 - **Fields**: Enable, disable, and reorder which information to display:
   - Python version (e.g., `3.14.2`)
   - Python implementation (e.g., `CPython`)
