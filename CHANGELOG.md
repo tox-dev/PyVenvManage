@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-01-04
+
+- Changelog update - `v2.1.2` by @github-actions[bot] in https://github.com/tox-dev/PyVenvManage/pull/78
+- Optimize GitHub Actions: parallelize verification and fix disk space by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/99
+- Refactor to modern Kotlin idioms and fix deprecated API by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/100
+- Add cache invalidation with file watcher by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/101
+- Improve error UX with notifications by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/102
+- Add plugin settings page by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/103
+- Improve plugin description and documentation by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/105
+- Enhance project view decorations and add 100% test coverage by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/104
+
 ## [2.1.2] - 2025-10-23
 
 - Fix python version display (#76) by @andrask in https://github.com/tox-dev/PyVenvManage/pull/77
@@ -73,7 +84,8 @@
 
 - Removed the usage of the deprecated PythonSdkType.getPythonExecutable API
 
-[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.2...HEAD
+[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.2...v2.2.0
 [2.1.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.0...v2.1.2
 [2.1.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.0...v2.0.1
