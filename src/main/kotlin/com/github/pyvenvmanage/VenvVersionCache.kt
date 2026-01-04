@@ -1,5 +1,6 @@
 package com.github.pyvenvmanage
 
+import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 
 import com.intellij.openapi.Disposable
@@ -12,7 +13,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent
 
 @Service(Service.Level.APP)
 class VenvVersionCache : Disposable {
-    private val cache = ConcurrentHashMap<String, String?>()
+    private val cache = ConcurrentHashMap<String, Optional<VenvInfo>>()
 
     init {
         VirtualFileManager.getInstance().addAsyncFileListener(
@@ -39,13 +40,18 @@ class VenvVersionCache : Disposable {
         )
     }
 
-    fun getVersion(pyvenvCfgPath: String): String? =
-        cache.computeIfAbsent(pyvenvCfgPath) {
-            VenvUtils.getPythonVersionFromPyVenv(
-                java.nio.file.Path
-                    .of(it),
-            )
-        }
+    fun getInfo(pyvenvCfgPath: String): VenvInfo? =
+        cache
+            .computeIfAbsent(pyvenvCfgPath) {
+                Optional.ofNullable(
+                    VenvUtils.getVenvInfo(
+                        java.nio.file.Path
+                            .of(it),
+                    ),
+                )
+            }.orElse(null)
+
+    fun getVersion(pyvenvCfgPath: String): String? = getInfo(pyvenvCfgPath)?.version
 
     fun invalidate(path: String) {
         cache.remove(path)

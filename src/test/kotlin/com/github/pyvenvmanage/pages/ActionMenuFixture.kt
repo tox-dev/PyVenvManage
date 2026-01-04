@@ -1,4 +1,8 @@
 package com.github.pyvenvmanage.pages
+
+import java.time.Duration
+import java.time.Duration.ofSeconds
+
 import com.intellij.remoterobot.RemoteRobot
 import com.intellij.remoterobot.data.RemoteComponent
 import com.intellij.remoterobot.fixtures.ComponentFixture
@@ -6,27 +10,25 @@ import com.intellij.remoterobot.fixtures.FixtureName
 import com.intellij.remoterobot.search.locators.byXpath
 import com.intellij.remoterobot.utils.waitFor
 
-fun RemoteRobot.actionMenu(text: String): ActionMenuFixture {
-    val xpath = byXpath("text '$text'", "//div[@class='ActionMenu' and @text='$text']")
-    waitFor {
-        findAll<ActionMenuFixture>(xpath).isNotEmpty()
-    }
-    return findAll<ActionMenuFixture>(xpath).first()
-}
-
-fun RemoteRobot.actionMenuItem(text: String): ActionMenuItemFixture {
+fun RemoteRobot.actionMenuItem(
+    text: String,
+    timeout: Duration = ofSeconds(30),
+): ActionMenuItemFixture {
     val xpath = byXpath("text '$text'", "//div[@class='ActionMenuItem' and @text='$text']")
-    waitFor {
+    waitFor(timeout) {
         findAll<ActionMenuItemFixture>(xpath).isNotEmpty()
     }
     return findAll<ActionMenuItemFixture>(xpath).first()
 }
 
-@FixtureName("ActionMenu")
-class ActionMenuFixture(
-    remoteRobot: RemoteRobot,
-    remoteComponent: RemoteComponent,
-) : ComponentFixture(remoteRobot, remoteComponent)
+fun RemoteRobot.hasActionMenuItem(text: String): Boolean {
+    val xpath = byXpath("text '$text'", "//div[@class='ActionMenuItem' and @text='$text']")
+    return findAll<ActionMenuItemFixture>(xpath).isNotEmpty()
+}
+
+fun RemoteRobot.pressEscape() {
+    runJs("robot.pressAndReleaseKey(java.awt.event.KeyEvent.VK_ESCAPE)")
+}
 
 @FixtureName("ActionMenuItem")
 class ActionMenuItemFixture(

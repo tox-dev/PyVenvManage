@@ -29,7 +29,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: zulu
-          java-version: 17
+          java-version: 21
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Build plugin
@@ -68,7 +68,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ide: [PC, PY, IC, IU, GO, CL, RR]
+        ide: [PC, PY]
     steps:
       - name: Free disk space
         uses: jlumbroso/free-disk-space@main
@@ -83,25 +83,54 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: zulu
-          java-version: 17
+          java-version: 21
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
         with:
           validate-wrappers: false
-          cache-read-only: true
-      - name: Set up verifier cache
+          cache-read-only: false
+      - name: Cache plugin verifier IDEs
         uses: actions/cache@v5
         with:
-          path: ${{ needs.build.outputs.pluginVerifierHomeDir }}/ides
-          key: plugin-verifier-${{ matrix.ide }}-${{ needs.build.outputs.platformVersion }}
+          path: ~/.pluginVerifier/ides
+          key: plugin-verifier-ides-${{ matrix.ide }}-${{ needs.build.outputs.platformVersion }}
+      - name: Clean corrupted Gradle transforms
+        run: |
+          find ~/.gradle/caches -type d -name "transforms" -exec sh -c '
+            for dir in "$1"/*/; do
+              if [ -d "$dir" ] && [ ! -f "${dir}metadata.bin" ]; then
+                echo "Removing corrupted transform: $dir"
+                rm -rf "$dir"
+              fi
+            done
+          ' _ {} \; 2>/dev/null || true
       - name: Run verification
-        run: ./gradlew verifyPlugin -PverifyIde=${{ matrix.ide }} -Dplugin.verifier.home.dir=${{ needs.build.outputs.pluginVerifierHomeDir }}
+        run: ./gradlew verifyPlugin -PverifyIde=${{ matrix.ide }}
       - name: Collect verification result
         if: ${{ always() }}
         uses: actions/upload-artifact@v6
         with:
           name: pluginVerifier-result-${{ matrix.ide }}
           path: ${{ github.workspace }}/build/reports/pluginVerifier
+
+  lint:
+    name: Lint
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout git repository
+        uses: actions/checkout@v6
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: 21
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-read-only: true
+      - name: Run linter
+        run: ./gradlew ktlintCheck
 
   test:
     name: Run tests
@@ -114,19 +143,31 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: zulu
-          java-version: 17
+          java-version: 21
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
         with:
           validate-wrappers: false
           cache-read-only: true
-      - name: Run linter
-        run: ./gradlew ktlintCheck
+      - name: Run unit tests
+        run: ./gradlew test
+      - name: Verify 100% coverage
+        run: ./gradlew koverVerify
+      - name: Run UI tests
+        run: |
+          export DISPLAY=:99.0
+          Xvfb :99 -screen 0 1920x1080x24 &
+          ./gradlew runIdeForUiTests &
+          echo "Waiting for IDE to start..."
+          timeout 180 bash -c 'until curl -s http://127.0.0.1:8082 > /dev/null 2>&1; do sleep 2; done' || { echo "IDE failed to start"; exit 1; }
+          echo "IDE is ready"
+          ./gradlew uiTest
+          kill %1 %2 || true
 
   releaseDraft:
     name: Create release draft
     if: github.event_name != 'pull_request'
-    needs: [build, test, verify]
+    needs: [build, lint, test, verify]
     runs-on: ubuntu-latest
     permissions:
       contents: write

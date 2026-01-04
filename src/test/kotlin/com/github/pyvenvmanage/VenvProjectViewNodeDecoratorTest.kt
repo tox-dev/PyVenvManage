@@ -51,8 +51,15 @@ class VenvProjectViewNodeDecoratorTest {
             settings = mockk(relaxed = true)
             mockkObject(PyVenvManageSettings.Companion)
             every { PyVenvManageSettings.getInstance() } returns settings
-            every { settings.showVersionInProjectView } returns true
-            every { settings.formatVersion(any()) } answers { " [${firstArg<String>()}]" }
+            every { settings.formatDecoration(any<VenvInfo>()) } answers
+                {
+                    val info = firstArg<VenvInfo>()
+                    val parts = mutableListOf(info.version)
+                    info.implementation?.let { parts.add(it) }
+                    if (info.includeSystemSitePackages) parts.add("SYSTEM")
+                    info.creator?.removePrefix(" - ")?.let { parts.add(it) }
+                    " [${parts.joinToString(" - ")}]"
+                }
         }
 
         @AfterEach
@@ -87,10 +94,10 @@ class VenvProjectViewNodeDecoratorTest {
             @TempDir tempDir: Path,
         ) {
             val pyvenvCfgPath = tempDir.resolve("pyvenv.cfg")
-            Files.writeString(pyvenvCfgPath, "version = 3.11.0")
+            Files.writeString(pyvenvCfgPath, "version = 3.11.0\nimplementation = CPython")
 
             every { VenvUtils.getPyVenvCfg(virtualFile) } returns pyvenvCfgPath
-            every { versionCache.getVersion(pyvenvCfgPath.toString()) } returns "3.11.0"
+            every { versionCache.getInfo(pyvenvCfgPath.toString()) } returns VenvInfo("3.11.0", "CPython", false, null)
             every { data.presentableText } returns "venv"
 
             decorator.decorate(node, data)
@@ -99,32 +106,32 @@ class VenvProjectViewNodeDecoratorTest {
         }
 
         @Test
-        fun `adds version text when version available`(
+        fun `adds version and implementation text when info available`(
             @TempDir tempDir: Path,
         ) {
             val pyvenvCfgPath = tempDir.resolve("pyvenv.cfg")
-            Files.writeString(pyvenvCfgPath, "version = 3.11.0")
+            Files.writeString(pyvenvCfgPath, "version = 3.11.0\nimplementation = CPython")
 
             every { VenvUtils.getPyVenvCfg(virtualFile) } returns pyvenvCfgPath
-            every { versionCache.getVersion(pyvenvCfgPath.toString()) } returns "3.11.0"
+            every { versionCache.getInfo(pyvenvCfgPath.toString()) } returns VenvInfo("3.11.0", "CPython", false, null)
             every { data.presentableText } returns "venv"
 
             decorator.decorate(node, data)
 
             verify { data.clearText() }
             verify { data.addText("venv", SimpleTextAttributes.REGULAR_ATTRIBUTES) }
-            verify { data.addText(" [3.11.0]", SimpleTextAttributes.GRAY_ATTRIBUTES) }
+            verify { data.addText(" [3.11.0 - CPython]", SimpleTextAttributes.GRAY_ATTRIBUTES) }
         }
 
         @Test
-        fun `does not add version text when version unavailable`(
+        fun `does not add text when info unavailable`(
             @TempDir tempDir: Path,
         ) {
             val pyvenvCfgPath = tempDir.resolve("pyvenv.cfg")
             Files.writeString(pyvenvCfgPath, "home = /usr/bin")
 
             every { VenvUtils.getPyVenvCfg(virtualFile) } returns pyvenvCfgPath
-            every { versionCache.getVersion(pyvenvCfgPath.toString()) } returns null
+            every { versionCache.getInfo(pyvenvCfgPath.toString()) } returns null
             every { data.presentableText } returns "venv"
 
             decorator.decorate(node, data)
@@ -135,40 +142,38 @@ class VenvProjectViewNodeDecoratorTest {
         }
 
         @Test
-        fun `uses cache for version lookup`(
+        fun `uses cache for info lookup`(
             @TempDir tempDir: Path,
         ) {
             val pyvenvCfgPath = tempDir.resolve("pyvenv.cfg")
-            Files.writeString(pyvenvCfgPath, "version = 3.11.0")
+            Files.writeString(pyvenvCfgPath, "version = 3.11.0\nimplementation = CPython")
 
             every { VenvUtils.getPyVenvCfg(virtualFile) } returns pyvenvCfgPath
-            every { versionCache.getVersion(pyvenvCfgPath.toString()) } returns "3.11.0"
+            every { versionCache.getInfo(pyvenvCfgPath.toString()) } returns VenvInfo("3.11.0", "CPython", false, null)
             every { data.presentableText } returns "venv"
 
-            // Call twice
             decorator.decorate(node, data)
             decorator.decorate(node, data)
 
-            // Version cache should be called twice (caching is handled by the cache service)
-            verify(exactly = 2) { versionCache.getVersion(pyvenvCfgPath.toString()) }
+            verify(exactly = 2) { versionCache.getInfo(pyvenvCfgPath.toString()) }
         }
 
         @Test
-        fun `respects showVersionInProjectView setting`(
+        fun `does not modify text when presentableText is null`(
             @TempDir tempDir: Path,
         ) {
             val pyvenvCfgPath = tempDir.resolve("pyvenv.cfg")
-            Files.writeString(pyvenvCfgPath, "version = 3.11.0")
+            Files.writeString(pyvenvCfgPath, "version = 3.11.0\nimplementation = CPython")
 
-            every { settings.showVersionInProjectView } returns false
             every { VenvUtils.getPyVenvCfg(virtualFile) } returns pyvenvCfgPath
-            every { data.presentableText } returns "venv"
+            every { versionCache.getInfo(pyvenvCfgPath.toString()) } returns VenvInfo("3.11.0", "CPython", false, null)
+            every { data.presentableText } returns null
 
             decorator.decorate(node, data)
 
             verify(exactly = 0) { data.clearText() }
             verify(exactly = 0) { data.addText(any(), any<SimpleTextAttributes>()) }
-            verify { data.setIcon(any()) } // Icon is still set
+            verify { data.setIcon(any()) }
         }
     }
 }

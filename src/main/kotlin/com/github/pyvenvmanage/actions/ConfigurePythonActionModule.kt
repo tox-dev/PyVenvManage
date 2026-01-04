@@ -6,7 +6,7 @@ import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 
-class ConfigurePythonActionModule : ConfigurePythonActionAbstract() {
+open class ConfigurePythonActionModule : ConfigurePythonActionAbstract() {
     override fun setSdk(
         project: Project,
         selectedPath: VirtualFile,
