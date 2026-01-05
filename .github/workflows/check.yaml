@@ -95,15 +95,7 @@ jobs:
           path: ~/.pluginVerifier/ides
           key: plugin-verifier-ides-${{ matrix.ide }}-${{ needs.build.outputs.platformVersion }}
       - name: Clean corrupted Gradle transforms
-        run: |
-          find ~/.gradle/caches -type d -name "transforms" -exec sh -c '
-            for dir in "$1"/*/; do
-              if [ -d "$dir" ] && [ ! -f "${dir}metadata.bin" ]; then
-                echo "Removing corrupted transform: $dir"
-                rm -rf "$dir"
-              fi
-            done
-          ' _ {} \; 2>/dev/null || true
+        run: rm -rf ~/.gradle/caches/*/transforms
       - name: Run verification
         run: ./gradlew verifyPlugin -PverifyIde=${{ matrix.ide }}
       - name: Collect verification result
@@ -128,7 +120,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
         with:
-          cache-read-only: true
+          cache-read-only: false
+      - name: Clean corrupted Gradle transforms
+        run: rm -rf ~/.gradle/caches/*/transforms
       - name: Run linter
         run: ./gradlew ktlintCheck
 
@@ -148,7 +142,9 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
         with:
           validate-wrappers: false
-          cache-read-only: true
+          cache-read-only: false
+      - name: Clean corrupted Gradle transforms
+        run: rm -rf ~/.gradle/caches/*/transforms
       - name: Run unit tests
         run: ./gradlew test
       - name: Verify 100% coverage
