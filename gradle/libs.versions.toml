@@ -1,7 +1,7 @@
 [versions]
 changelog = "2.5.0"
 intelliJPlatform = "2.10.5"
-junitPlatformLauncher= "6.0.0"
+junitPlatformLauncher= "6.0.2"
 jupiter = "6.0.2"
 kotlin = "2.3.0"
 mockk = "1.14.7"
