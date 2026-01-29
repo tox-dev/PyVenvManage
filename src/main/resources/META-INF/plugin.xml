@@ -3,39 +3,13 @@
     <name>PyVenv Manage 2</name>
     <vendor url="https://github.com/pyvenvmanage/PyVenvManage">pyvenvmanage</vendor>
 
-    <depends>com.intellij.modules.python</depends>
     <depends>com.intellij.modules.platform</depends>
+    <depends optional="true" config-file="pyvenvmanage-python.xml">com.intellij.modules.python</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <notificationGroup id="Python SDK change"
-                           displayType="BALLOON"/>
-        <projectViewNodeDecorator implementation="com.github.pyvenvmanage.VenvProjectViewNodeDecorator"/>
-        <applicationConfigurable
-                parentId="tools"
-                instance="com.github.pyvenvmanage.settings.PyVenvManageConfigurable"
-                id="com.github.pyvenvmanage.settings.PyVenvManageConfigurable"
-                displayName="PyVenv Manage"/>
+        <notificationGroup id="PyVenv Manage"
+                           displayType="STICKY_BALLOON"/>
+        <postStartupActivity implementation="com.github.pyvenvmanage.PythonRequiredStartupActivity"/>
     </extensions>
-
-    <actions>
-        <action
-                id="com.github.pyvenvmanage.actions.ConfigurePythonActionProject"
-                class="com.github.pyvenvmanage.actions.ConfigurePythonActionProject"
-                text="Set as Project Interpreter"
-                description="Configure this Python to be the projects interpreter."
-                icon="com.jetbrains.python.icons.PythonIcons.Python.Virtualenv"
-        >
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-        </action>
-        <action
-                id="com.github.pyvenvmanage.actions.ConfigurePythonActionModule"
-                class="com.github.pyvenvmanage.actions.ConfigurePythonActionModule"
-                text="Set as Module Interpreter"
-                description="Configure this Python to be the current modules interpreter."
-                icon="com.jetbrains.python.icons.PythonIcons.Python.Virtualenv"
-        >
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
-        </action>
-    </actions>
 
 </idea-plugin>
