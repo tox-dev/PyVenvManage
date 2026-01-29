@@ -17,7 +17,24 @@ plugins {
 }
 
 group = providers.gradleProperty("pluginGroup").get()
-version = providers.gradleProperty("pluginVersion").get()
+version =
+    providers
+        .gradleProperty("pluginVersion")
+        .get()
+        .let { baseVersion ->
+            if (baseVersion.endsWith("-dev")) {
+                val gitHash =
+                    providers
+                        .exec { commandLine("git", "rev-parse", "--short=8", "HEAD") }
+                        .standardOutput
+                        .asText
+                        .get()
+                        .trim()
+                "$baseVersion+$gitHash"
+            } else {
+                baseVersion
+            }
+        }
 val platformVersion = providers.gradleProperty("platformVersion").get()
 kotlin {
     jvmToolchain(17)
