@@ -10,95 +10,72 @@ concurrency:
 
 jobs:
   build:
-    name: Build plugin
+    name: 📦 Build
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.properties.outputs.version }}
-      changelog: ${{ steps.properties.outputs.changelog }}
-      pluginVerifierHomeDir: ${{ steps.properties.outputs.pluginVerifierHomeDir }}
-      platformVersion: ${{ steps.properties.outputs.platformVersion }}
     steps:
-      - name: Maximize Build Space
+      - name: 🧹 Free disk space
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: false
           large-packages: false
-      - name: Checkout git repository
+      - name: 📥 Checkout
         uses: actions/checkout@v6
-      - name: Set up Java
+      - name: ☕ Set up Java
         uses: actions/setup-java@v5
         with:
           distribution: zulu
           java-version: 21
-      - name: Set up Gradle
+      - name: 🐘 Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-      - name: Build plugin
+      - name: 🔨 Build plugin
         run: ./gradlew --console=plain buildPlugin
-      - name: Prepare Plugin Artifact
+      - name: 📁 Prepare artifact
         id: artifact
-        shell: bash
         run: |
           cd ${{ github.workspace }}/build/distributions
           FILENAME=`ls *.zip`
           unzip "$FILENAME" -d content
           echo "filename=${FILENAME:0:-4}" >> $GITHUB_OUTPUT
-      - name: Upload artifact for later download
+      - name: 📤 Upload artifact
         uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.artifact.outputs.filename }}
           path: ./build/distributions/content/*/*
-      - name: Export plugin properties
-        id: properties
-        shell: bash
-        run: |
-          PROPERTIES="$(./gradlew properties --console=plain -q)"
-          VERSION="$(echo "$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "pluginVerifierHomeDir=$HOME/.pluginVerifier" >> $GITHUB_OUTPUT
-          echo "platformVersion=$(echo "$PROPERTIES" | grep "^platformVersion:" | cut -f2- -d ' ')" >> $GITHUB_OUTPUT
-          CHANGELOG="$(./gradlew getChangelog --unreleased --no-header --console=plain -q)"
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGELOG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
 
   verify:
-    name: Verify (${{ matrix.ide }})
-    needs: [build]
+    name: 🔍 Verify (${{ matrix.ide }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        ide: [PC, PY]
+        ide: ${{ github.event_name == 'pull_request' && fromJson('["PC"]') || fromJson('["PC", "PY"]') }}
     steps:
-      - name: Free disk space
+      - name: 🧹 Free disk space
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: false
           large-packages: false
           android: true
           dotnet: true
-      - name: Checkout git repository
+          haskell: true
+          docker-images: true
+      - name: 📥 Checkout
         uses: actions/checkout@v6
-      - name: Set up Java
+      - name: ☕ Set up Java
         uses: actions/setup-java@v5
         with:
           distribution: zulu
           java-version: 21
-      - name: Set up Gradle
+      - name: 🐘 Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-        with:
-          validate-wrappers: false
-          cache-read-only: false
-      - name: Cache plugin verifier IDEs
+      - name: 💾 Cache verifier IDEs
         uses: actions/cache@v5
         with:
           path: ~/.pluginVerifier/ides
-          key: plugin-verifier-ides-${{ matrix.ide }}-${{ needs.build.outputs.platformVersion }}
-      - name: Clean corrupted Gradle transforms
-        run: rm -rf ~/.gradle/caches/*/transforms
-      - name: Run verification
+          key: plugin-verifier-ides-${{ matrix.ide }}-${{ hashFiles('gradle.properties') }}
+      - name: ✅ Run verification
         run: ./gradlew verifyPlugin -PverifyIde=${{ matrix.ide }}
-      - name: Collect verification result
+      - name: 📤 Upload results
         if: ${{ always() }}
         uses: actions/upload-artifact@v6
         with:
@@ -106,50 +83,66 @@ jobs:
           path: ${{ github.workspace }}/build/reports/pluginVerifier
 
   lint:
-    name: Lint
-    needs: [build]
+    name: 🧹 Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout git repository
+      - name: 🧹 Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          large-packages: false
+      - name: 📥 Checkout
         uses: actions/checkout@v6
-      - name: Set up Java
+      - name: ☕ Set up Java
         uses: actions/setup-java@v5
         with:
           distribution: zulu
           java-version: 21
-      - name: Set up Gradle
+      - name: 🐘 Set up Gradle
         uses: gradle/actions/setup-gradle@v5
-        with:
-          cache-read-only: false
-      - name: Clean corrupted Gradle transforms
-        run: rm -rf ~/.gradle/caches/*/transforms
-      - name: Run linter
+      - name: 🔍 Run linter
         run: ./gradlew ktlintCheck
 
   test:
-    name: Run tests
-    needs: [build]
+    name: 🧪 Unit tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout git repository
+      - name: 🧹 Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          large-packages: false
+      - name: 📥 Checkout
         uses: actions/checkout@v6
-      - name: Set up Java
+      - name: ☕ Set up Java
         uses: actions/setup-java@v5
         with:
           distribution: zulu
           java-version: 21
-      - name: Set up Gradle
+      - name: 🐘 Set up Gradle
         uses: gradle/actions/setup-gradle@v5
+      - name: ✅ Run tests with coverage
+        run: ./gradlew test koverVerify
+
+  ui-test:
+    name: 🖥️ UI tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧹 Free disk space
+        uses: jlumbroso/free-disk-space@main
         with:
-          validate-wrappers: false
-          cache-read-only: false
-      - name: Clean corrupted Gradle transforms
-        run: rm -rf ~/.gradle/caches/*/transforms
-      - name: Run unit tests
-        run: ./gradlew test
-      - name: Verify 100% coverage
-        run: ./gradlew koverVerify
-      - name: Run UI tests
+          tool-cache: false
+          large-packages: false
+      - name: 📥 Checkout
+        uses: actions/checkout@v6
+      - name: ☕ Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: 21
+      - name: 🐘 Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: 🖥️ Run UI tests
         run: |
           export DISPLAY=:99.0
           Xvfb :99 -screen 0 1920x1080x24 &
@@ -159,31 +152,3 @@ jobs:
           echo "IDE is ready"
           ./gradlew uiTest
           kill %1 %2 || true
-
-  releaseDraft:
-    name: Create release draft
-    if: github.event_name != 'pull_request'
-    needs: [build, lint, test, verify]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout git repository
-        uses: actions/checkout@v6
-      - name: Remove old release drafts
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api repos/{owner}/{repo}/releases --jq '.[] | select(.draft == true) | .id' \
-            | xargs -I '{}' gh api -X DELETE repos/{owner}/{repo}/releases/{}
-      - name: Create release draft
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "v${{ needs.build.outputs.version }}" \
-            --draft \
-            --title "v${{ needs.build.outputs.version }}" \
-            --notes "$(cat << 'EOM'
-          ${{ needs.build.outputs.changelog }}
-          EOM
-          )"
