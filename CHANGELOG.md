@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [2.2.4] - 2026-01-30
+
+- Bump version to `2.2.4-dev` by @github-actions[bot] in https://github.com/tox-dev/PyVenvManage/pull/123
+- Use RELEASE_TOKEN for post-release PR and auto-merge by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/124
+
 ## [2.2.3] - 2026-01-30
 
 - Bump version to `2.2.3-dev` by @github-actions[bot] in https://github.com/tox-dev/PyVenvManage/pull/120
@@ -101,7 +106,8 @@
 
 - Removed the usage of the deprecated PythonSdkType.getPythonExecutable API
 
-[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.3...HEAD
+[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.4...HEAD
+[2.2.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.3...v2.2.4
 [2.2.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.0...v2.2.1
