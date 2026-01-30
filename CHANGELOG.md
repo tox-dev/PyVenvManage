@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.2.3] - 2026-01-30
+
+- Bump version to `2.2.3-dev` by @github-actions[bot] in https://github.com/tox-dev/PyVenvManage/pull/120
+- Add auto-merge workflow for trusted contributors by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/121
+- Make Python dependency optional to fix marketplace verification by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/122
+
 ## [2.2.2] - 2026-01-29
 
 - Changelog update - `v2.2.1` by @github-actions[bot] in https://github.com/tox-dev/PyVenvManage/pull/111
@@ -95,7 +101,8 @@
 
 - Removed the usage of the deprecated PythonSdkType.getPythonExecutable API
 
-[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.2...HEAD
+[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.3...HEAD
+[2.2.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.2...v2.2.0
