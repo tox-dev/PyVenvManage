@@ -28,13 +28,20 @@ class PythonRequiredStartupActivity : ProjectActivity {
             ).notify(project)
     }
 
-    private fun isPythonPluginAvailable(): Boolean =
-        com.intellij.ide.plugins.PluginManagerCore
-            .getPlugin(
-                PluginId.getId("com.intellij.modules.python"),
-            )?.isEnabled == true ||
+    private fun isPythonPluginAvailable(): Boolean {
+        val pythonModuleId = PluginId.getId("com.intellij.modules.python")
+        val pythonCoreId = PluginId.getId("PythonCore")
+        return (
             com.intellij.ide.plugins.PluginManagerCore
-                .getPlugin(
-                    PluginId.getId("PythonCore"),
-                )?.isEnabled == true
+                .getPlugin(pythonModuleId) != null &&
+                !com.intellij.ide.plugins.PluginManagerCore
+                    .isDisabled(pythonModuleId)
+        ) ||
+            (
+                com.intellij.ide.plugins.PluginManagerCore
+                    .getPlugin(pythonCoreId) != null &&
+                    !com.intellij.ide.plugins.PluginManagerCore
+                        .isDisabled(pythonCoreId)
+            )
+    }
 }
