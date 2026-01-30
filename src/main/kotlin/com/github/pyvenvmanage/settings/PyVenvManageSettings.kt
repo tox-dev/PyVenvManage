@@ -30,6 +30,7 @@ class PyVenvManageSettings : PersistentStateComponent<PyVenvManageSettings.Setti
         var suffix: String = "]",
         var separator: String = " - ",
         var fields: List<String> = DecorationField.entries.map { it.name },
+        var dismissedPythonWarning: Boolean = false,
     )
 
     override fun getState(): SettingsState = state
@@ -60,6 +61,12 @@ class PyVenvManageSettings : PersistentStateComponent<PyVenvManageSettings.Setti
         get() = state.fields.mapNotNull { name -> DecorationField.entries.find { it.name == name } }
         set(value) {
             state.fields = value.map { it.name }
+        }
+
+    var dismissedPythonWarning: Boolean
+        get() = state.dismissedPythonWarning
+        set(value) {
+            state.dismissedPythonWarning = value
         }
 
     fun formatDecoration(info: VenvInfo): String {

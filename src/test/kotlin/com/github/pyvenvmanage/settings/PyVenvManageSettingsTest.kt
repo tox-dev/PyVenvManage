@@ -174,6 +174,17 @@ class PyVenvManageSettingsTest {
     }
 
     @Test
+    fun `default dismissedPythonWarning is false`() {
+        assertEquals(false, settings.dismissedPythonWarning)
+    }
+
+    @Test
+    fun `dismissedPythonWarning can be set`() {
+        settings.dismissedPythonWarning = true
+        assertEquals(true, settings.dismissedPythonWarning)
+    }
+
+    @Test
     fun `getInstance returns settings instance`() {
         val application: Application = mockk(relaxed = true)
         val mockSettings: PyVenvManageSettings = mockk(relaxed = true)
