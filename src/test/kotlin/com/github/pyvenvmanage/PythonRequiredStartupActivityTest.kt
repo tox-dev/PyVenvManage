@@ -31,6 +31,8 @@ class PythonRequiredStartupActivityTest {
     private lateinit var notificationGroup: NotificationGroup
     private lateinit var notification: Notification
     private lateinit var settings: PyVenvManageSettings
+    private lateinit var pythonModuleId: PluginId
+    private lateinit var pythonCoreId: PluginId
 
     @BeforeEach
     fun setUp() {
@@ -39,6 +41,8 @@ class PythonRequiredStartupActivityTest {
         notificationGroup = mockk(relaxed = true)
         notification = mockk(relaxed = true)
         settings = mockk(relaxed = true)
+        pythonModuleId = PluginId.getId("com.intellij.modules.python")
+        pythonCoreId = PluginId.getId("PythonCore")
 
         mockkStatic(NotificationGroupManager::class)
         mockkStatic(PluginManagerCore::class)
@@ -65,10 +69,8 @@ class PythonRequiredStartupActivityTest {
     fun `does not show notification when python module is available`(): Unit =
         runBlocking {
             val pythonPlugin: IdeaPluginDescriptor = mockk(relaxed = true)
-            every { pythonPlugin.isEnabled } returns true
-            every {
-                PluginManagerCore.getPlugin(PluginId.getId("com.intellij.modules.python"))
-            } returns pythonPlugin
+            every { PluginManagerCore.getPlugin(pythonModuleId) } returns pythonPlugin
+            every { PluginManagerCore.isDisabled(pythonModuleId) } returns false
 
             PythonRequiredStartupActivity().execute(project)
 
@@ -79,9 +81,9 @@ class PythonRequiredStartupActivityTest {
     fun `does not show notification when PythonCore plugin is available`(): Unit =
         runBlocking {
             val pythonCorePlugin: IdeaPluginDescriptor = mockk(relaxed = true)
-            every { pythonCorePlugin.isEnabled } returns true
-            every { PluginManagerCore.getPlugin(PluginId.getId("com.intellij.modules.python")) } returns null
-            every { PluginManagerCore.getPlugin(PluginId.getId("PythonCore")) } returns pythonCorePlugin
+            every { PluginManagerCore.getPlugin(pythonModuleId) } returns null
+            every { PluginManagerCore.getPlugin(pythonCoreId) } returns pythonCorePlugin
+            every { PluginManagerCore.isDisabled(pythonCoreId) } returns false
 
             PythonRequiredStartupActivity().execute(project)
 
@@ -91,8 +93,8 @@ class PythonRequiredStartupActivityTest {
     @Test
     fun `shows warning notification when python is not available`(): Unit =
         runBlocking {
-            every { PluginManagerCore.getPlugin(PluginId.getId("com.intellij.modules.python")) } returns null
-            every { PluginManagerCore.getPlugin(PluginId.getId("PythonCore")) } returns null
+            every { PluginManagerCore.getPlugin(pythonModuleId) } returns null
+            every { PluginManagerCore.getPlugin(pythonCoreId) } returns null
 
             PythonRequiredStartupActivity().execute(project)
 
@@ -110,9 +112,9 @@ class PythonRequiredStartupActivityTest {
     fun `shows warning when python plugin exists but is disabled`(): Unit =
         runBlocking {
             val disabledPlugin: IdeaPluginDescriptor = mockk(relaxed = true)
-            every { disabledPlugin.isEnabled } returns false
-            every { PluginManagerCore.getPlugin(PluginId.getId("com.intellij.modules.python")) } returns disabledPlugin
-            every { PluginManagerCore.getPlugin(PluginId.getId("PythonCore")) } returns null
+            every { PluginManagerCore.getPlugin(pythonModuleId) } returns disabledPlugin
+            every { PluginManagerCore.isDisabled(pythonModuleId) } returns true
+            every { PluginManagerCore.getPlugin(pythonCoreId) } returns null
 
             PythonRequiredStartupActivity().execute(project)
 
@@ -122,8 +124,8 @@ class PythonRequiredStartupActivityTest {
     @Test
     fun `does not show notification when warning was dismissed`(): Unit =
         runBlocking {
-            every { PluginManagerCore.getPlugin(PluginId.getId("com.intellij.modules.python")) } returns null
-            every { PluginManagerCore.getPlugin(PluginId.getId("PythonCore")) } returns null
+            every { PluginManagerCore.getPlugin(pythonModuleId) } returns null
+            every { PluginManagerCore.getPlugin(pythonCoreId) } returns null
             every { settings.dismissedPythonWarning } returns true
 
             PythonRequiredStartupActivity().execute(project)
@@ -134,8 +136,8 @@ class PythonRequiredStartupActivityTest {
     @Test
     fun `notification includes dont show again action`(): Unit =
         runBlocking {
-            every { PluginManagerCore.getPlugin(PluginId.getId("com.intellij.modules.python")) } returns null
-            every { PluginManagerCore.getPlugin(PluginId.getId("PythonCore")) } returns null
+            every { PluginManagerCore.getPlugin(pythonModuleId) } returns null
+            every { PluginManagerCore.getPlugin(pythonCoreId) } returns null
 
             PythonRequiredStartupActivity().execute(project)
 
@@ -145,8 +147,8 @@ class PythonRequiredStartupActivityTest {
     @Test
     fun `dont show again action sets dismissed flag and expires notification`(): Unit =
         runBlocking {
-            every { PluginManagerCore.getPlugin(PluginId.getId("com.intellij.modules.python")) } returns null
-            every { PluginManagerCore.getPlugin(PluginId.getId("PythonCore")) } returns null
+            every { PluginManagerCore.getPlugin(pythonModuleId) } returns null
+            every { PluginManagerCore.getPlugin(pythonCoreId) } returns null
 
             val actionSlot = slot<NotificationAction>()
             every { notification.addAction(capture(actionSlot)) } returns notification
