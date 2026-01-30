@@ -65,7 +65,7 @@ jobs:
           echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
       - name: 📝 Create post-release PR
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           VERSION="${{ github.event.release.tag_name }}"
           NEXT_VERSION="${{ steps.next.outputs.next_version }}"
