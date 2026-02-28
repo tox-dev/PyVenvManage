@@ -12,8 +12,8 @@
 **PyVenvManage** simplifies Python virtual environment management in JetBrains IDEs.
 
 Managing multiple Python interpreters across different virtual environments (for testing against various Python versions
-with tools like `tox` or `nox`) traditionally requires navigating through multiple dialogs in PyCharm. PyVenvManage
-streamlines this by enabling quick interpreter selection directly from the project view with just a right-click.
+with tools like `tox` or `nox`) traditionally requires navigating through multiple dialogs in PyCharm or other JetBrains IDEs.
+PyVenvManage streamlines this by enabling quick interpreter selection directly from the project view with just a right-click.
 
 ## Features
 
