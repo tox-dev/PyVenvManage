@@ -1,6 +1,6 @@
 name: Auto-merge
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
 
 permissions: {}
@@ -9,7 +9,12 @@ jobs:
   auto-merge:
     name: 🤝 Auto-merge
     runs-on: ubuntu-latest
-    if: github.actor == 'gaborbernat' || github.actor == 'dependabot[bot]' || github.actor == 'pre-commit-ci[bot]' || github.actor == 'github-actions[bot]'
+    environment: auto-merge
+    if: >-
+      github.event.pull_request.user.login == 'gaborbernat' ||
+      github.event.pull_request.user.login == 'dependabot[bot]' ||
+      github.event.pull_request.user.login == 'pre-commit-ci[bot]' ||
+      github.event.pull_request.user.login == 'github-actions[bot]'
     steps:
       - name: 🔀 Enable auto-merge
         run: gh pr merge --auto --squash "$PR_URL"
