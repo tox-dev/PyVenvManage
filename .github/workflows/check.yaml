@@ -17,19 +17,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🧹 Free disk space
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
         with:
           tool-cache: false
           large-packages: false
       - name: 📥 Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
       - name: ☕ Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: zulu
           java-version: 21
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
       - name: 🔨 Build plugin
         run: ./gradlew --console=plain buildPlugin
       - name: 📁 Prepare artifact
@@ -40,7 +42,7 @@ jobs:
           unzip "$FILENAME" -d content
           echo "filename=${FILENAME:0:-4}" >> $GITHUB_OUTPUT
       - name: 📤 Upload artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ${{ steps.artifact.outputs.filename }}
           path: ./build/distributions/content/*/*
@@ -54,7 +56,7 @@ jobs:
         ide: ${{ github.event_name == 'pull_request' && fromJson('["PC"]') || fromJson('["PC", "PY"]') }}
     steps:
       - name: 🧹 Free disk space
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
         with:
           tool-cache: false
           large-packages: false
@@ -63,24 +65,28 @@ jobs:
           haskell: true
           docker-images: true
       - name: 📥 Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
       - name: ☕ Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: zulu
           java-version: 21
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
       - name: 💾 Cache verifier IDEs
-        uses: actions/cache@v5
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: ~/.pluginVerifier/ides
           key: plugin-verifier-ides-${{ matrix.ide }}-${{ hashFiles('gradle.properties') }}
       - name: ✅ Run verification
-        run: ./gradlew verifyPlugin -PverifyIde=${{ matrix.ide }}
+        run: ./gradlew verifyPlugin -PverifyIde=${MATRIX_IDE}
+        env:
+          MATRIX_IDE: ${{ matrix.ide }}
       - name: 📤 Upload results
         if: ${{ always() }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: pluginVerifier-result-${{ matrix.ide }}
           path: ${{ github.workspace }}/build/reports/pluginVerifier
@@ -90,19 +96,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🧹 Free disk space
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
         with:
           tool-cache: false
           large-packages: false
       - name: 📥 Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
       - name: ☕ Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: zulu
           java-version: 21
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
       - name: 🔍 Run linter
         run: ./gradlew ktlintCheck
 
@@ -111,19 +119,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🧹 Free disk space
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
         with:
           tool-cache: false
           large-packages: false
       - name: 📥 Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
       - name: ☕ Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: zulu
           java-version: 21
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
       - name: ✅ Run tests with coverage
         run: ./gradlew test koverVerify
 
@@ -132,19 +142,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🧹 Free disk space
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
         with:
           tool-cache: false
           large-packages: false
       - name: 📥 Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
       - name: ☕ Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: zulu
           java-version: 21
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
       - name: 🖥️ Run UI tests
         run: |
           export DISPLAY=:99.0

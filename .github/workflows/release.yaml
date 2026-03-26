@@ -16,35 +16,40 @@ jobs:
       url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
     steps:
       - name: 📥 Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
       - name: 🧹 Free disk space
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
         with:
           tool-cache: false
           large-packages: false
       - name: ☕ Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
           distribution: zulu
           java-version: 21
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
       - name: 🏷️ Set version from tag
         id: version
         run: |
-          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${GITHUB_EVENT_RELEASE_TAG_NAME}"
           VERSION="${VERSION#v}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           sed -i "s/^pluginVersion=.*/pluginVersion=$VERSION/" gradle.properties
+        env:
+          GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
       - name: 📝 Update changelog
         if: ${{ github.event.release.body != '' }}
         run: |
           cat > /tmp/release-notes.txt << 'RELEASE_NOTES_EOF'
-          ${{ github.event.release.body }}
+          ${GITHUB_EVENT_RELEASE_BODY}
           RELEASE_NOTES_EOF
           ./gradlew patchChangelog --release-note="$(cat /tmp/release-notes.txt)"
+        env:
+          GITHUB_EVENT_RELEASE_BODY: ${{ github.event.release.body }}
       - name: 📤 Publish to JetBrains Marketplace
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
@@ -55,20 +60,25 @@ jobs:
       - name: 📎 Upload release artifact
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ github.event.release.tag_name }} ./build/distributions/*
+          GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+        run: gh release upload ${GITHUB_EVENT_RELEASE_TAG_NAME} ./build/distributions/*
       - name: 🔢 Calculate next dev version
         id: next
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${STEPS_VERSION_OUTPUTS_VERSION}"
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
           NEXT_VERSION="$MAJOR.$MINOR.$((PATCH + 1))-dev"
           echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+        env:
+          STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
       - name: 📝 Create post-release PR
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+          STEPS_NEXT_OUTPUTS_NEXT_VERSION: ${{ steps.next.outputs.next_version }}
         run: |
-          VERSION="${{ github.event.release.tag_name }}"
-          NEXT_VERSION="${{ steps.next.outputs.next_version }}"
+          VERSION="${GITHUB_EVENT_RELEASE_TAG_NAME}"
+          NEXT_VERSION="${STEPS_NEXT_OUTPUTS_NEXT_VERSION}"
           BRANCH="post-release-$VERSION"
 
           # Save patched changelog before switching branches
