@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2.2.7] - 2026-03-31
+
+${GITHUB_EVENT_RELEASE_BODY}
+
 ## [2.2.6] - 2026-03-31
 
 - Bump version to `2.2.6-dev` by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/127
@@ -123,7 +127,9 @@
 
 - Removed the usage of the deprecated PythonSdkType.getPythonExecutable API
 
-[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.5...HEAD
+[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.7...HEAD
+[2.2.7]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.6...v2.2.7
+[2.2.6]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.5...v2.2.6
 [2.2.5]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.4...v2.2.5
 [2.2.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.3...v2.2.4
 [2.2.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.2...v2.2.3
