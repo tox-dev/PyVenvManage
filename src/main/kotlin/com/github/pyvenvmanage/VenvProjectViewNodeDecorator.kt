@@ -1,12 +1,12 @@
 package com.github.pyvenvmanage
 
+import javax.swing.Icon
+
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ProjectViewNodeDecorator
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.ui.SimpleTextAttributes
-
-import com.jetbrains.python.icons.PythonIcons.Python.Virtualenv
 
 import com.github.pyvenvmanage.settings.PyVenvManageSettings
 
@@ -32,7 +32,25 @@ class VenvProjectViewNodeDecorator : ProjectViewNodeDecorator {
                     data.addText(decoration, SimpleTextAttributes.GRAY_ATTRIBUTES)
                 } ?: thisLogger().debug("No presentableText for decoration")
             } ?: thisLogger().debug("No venvInfo found for $pyVenvCfgPath")
-            data.setIcon(Virtualenv)
+            virtualenvIcon?.let { data.setIcon(it) }
         }
+    }
+
+    companion object {
+        val virtualenvIcon: Icon? by lazy {
+            loadIcon("com.intellij.python.venv.icons.PythonVenvIcons", "VirtualEnv")
+                ?: loadIcon("com.jetbrains.python.icons.PythonIcons\$Python", "Virtualenv")
+        }
+
+        private fun loadIcon(
+            className: String,
+            fieldName: String,
+        ): Icon? =
+            try {
+                val clazz = Class.forName(className)
+                clazz.getField(fieldName).get(null) as? Icon
+            } catch (_: Exception) {
+                null
+            }
     }
 }
