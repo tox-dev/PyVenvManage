@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [2.2.6] - 2026-03-31
+
+- Bump version to `2.2.6-dev` by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/127
+- Add permissions to workflows by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/137
+- Move SECURITY.md to .github/SECURITY.md by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/139
+- Add missing .github config files by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/140
+- Switch FUNDING.yml to github: gaborbernat by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/141
+- Standardize .github files to .yaml suffix by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/142
+- Clarify the venv selection painfulness by @andrask in https://github.com/tox-dev/PyVenvManage/pull/143
+- 🔒 ci(workflows): add zizmor security auditing by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/154
+- 🐛 fix(icons): resolve NoSuchFieldError on IntelliJ 2026.1 by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/157
+- 🔒 fix(ci): split release workflow for proper credential scoping by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/158
+
 ## [2.2.5] - 2026-01-30
 
 - Replace deprecated PluginDescriptor.isEnabled API by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/126
