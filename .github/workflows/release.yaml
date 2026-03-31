@@ -1,4 +1,4 @@
-# Secrets required: PUBLISH_TOKEN, PRIVATE_KEY, PRIVATE_KEY_PASSWORD, CERTIFICATE_CHAIN.
+# Secrets required: PUBLISH_TOKEN, PRIVATE_KEY, PRIVATE_KEY_PASSWORD, CERTIFICATE_CHAIN, RELEASE_TOKEN.
 name: Release
 on:
   release:
@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
     environment:
       name: release
       url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
@@ -62,13 +61,52 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
         run: gh release upload ${GITHUB_EVENT_RELEASE_TAG_NAME} ./build/distributions/*
+
+  post-release:
+    name: 📝 Post-release version bump
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    environment:
+      name: release
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
+      - name: ☕ Set up Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
+        with:
+          distribution: zulu
+          java-version: 21
+      - name: 🐘 Set up Gradle
+        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
+      - name: 🏷️ Set version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_EVENT_RELEASE_TAG_NAME#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          sed -i "s/^pluginVersion=.*/pluginVersion=$VERSION/" gradle.properties
+        env:
+          GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+      - name: 📝 Update changelog
+        if: ${{ github.event.release.body != '' }}
+        run: |
+          cat > /tmp/release-notes.txt << 'RELEASE_NOTES_EOF'
+          ${GITHUB_EVENT_RELEASE_BODY}
+          RELEASE_NOTES_EOF
+          ./gradlew patchChangelog --release-note="$(cat /tmp/release-notes.txt)"
+        env:
+          GITHUB_EVENT_RELEASE_BODY: ${{ github.event.release.body }}
       - name: 🔢 Calculate next dev version
         id: next
         run: |
           VERSION="${STEPS_VERSION_OUTPUTS_VERSION}"
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-          NEXT_VERSION="$MAJOR.$MINOR.$((PATCH + 1))-dev"
-          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "next_version=$MAJOR.$MINOR.$((PATCH + 1))-dev" >> $GITHUB_OUTPUT
         env:
           STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
       - name: 📝 Create post-release PR
@@ -81,11 +119,11 @@ jobs:
           NEXT_VERSION="${STEPS_NEXT_OUTPUTS_NEXT_VERSION}"
           BRANCH="post-release-$VERSION"
 
-          # Save patched changelog before switching branches
-          cp CHANGELOG.md /tmp/CHANGELOG.md
-
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          cp CHANGELOG.md /tmp/CHANGELOG.md
 
           git fetch origin main
           git checkout -b $BRANCH origin/main
