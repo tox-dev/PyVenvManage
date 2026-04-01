@@ -1,12 +1,15 @@
 package com.github.pyvenvmanage.actions
 
+import java.nio.file.Path
+
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.slot
-import io.mockk.unmockkStatic
+import io.mockk.unmockkAll
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,17 +25,19 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.Presentation
-import com.intellij.openapi.application.Application
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.python.community.impl.uv.common.icons.PythonCommunityImplUVCommonIcons
+import com.intellij.python.venv.icons.PythonVenvIcons
 
 import com.jetbrains.python.configuration.PyConfigurableInterpreterList
-import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.PythonSdkUtil
+
+import com.github.pyvenvmanage.sdk.EnvironmentDetector
+import com.github.pyvenvmanage.sdk.PythonEnvironmentType
+import com.github.pyvenvmanage.sdk.SdkFactory
 
 class ConfigurePythonActionAbstractTest {
     private lateinit var action: TestableConfigurePythonAction
@@ -63,11 +68,13 @@ class ConfigurePythonActionAbstractTest {
         @BeforeEach
         fun setUpMocks() {
             mockkStatic(PythonSdkUtil::class)
+            mockkObject(EnvironmentDetector)
+            mockkObject(SdkFactory)
         }
 
         @AfterEach
         fun tearDown() {
-            unmockkStatic(PythonSdkUtil::class)
+            unmockkAll()
         }
 
         @Test
@@ -85,10 +92,14 @@ class ConfigurePythonActionAbstractTest {
             every { virtualFile.isDirectory } returns true
             every { virtualFile.path } returns "/some/venv"
             every { PythonSdkUtil.getPythonExecutable("/some/venv") } returns "/some/venv/bin/python"
+            every { EnvironmentDetector.detectEnvironmentType("/some/venv/bin/python") } returns
+                PythonEnvironmentType.UV
+            every { SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.UV) } returns PythonVenvIcons.VirtualEnv
 
             action.update(event)
 
             verify { presentation.isEnabledAndVisible = true }
+            verify { presentation.icon = any() }
         }
 
         @Test
@@ -104,27 +115,19 @@ class ConfigurePythonActionAbstractTest {
         }
 
         @Test
-        fun `enables action for file in virtual env`() {
+        fun `sets icon based on detected environment type`() {
             every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
-            every { virtualFile.isDirectory } returns false
-            every { virtualFile.path } returns "/some/venv/bin/python"
-            every { PythonSdkUtil.isVirtualEnv("/some/venv/bin/python") } returns true
+            every { virtualFile.isDirectory } returns true
+            every { virtualFile.path } returns "/some/venv"
+            every { PythonSdkUtil.getPythonExecutable("/some/venv") } returns "/some/venv/bin/python"
+            every { EnvironmentDetector.detectEnvironmentType("/some/venv/bin/python") } returns
+                PythonEnvironmentType.UV
+            every { SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.UV) } returns
+                PythonCommunityImplUVCommonIcons.UV
 
             action.update(event)
 
-            verify { presentation.isEnabledAndVisible = true }
-        }
-
-        @Test
-        fun `disables action for file not in virtual env`() {
-            every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
-            every { virtualFile.isDirectory } returns false
-            every { virtualFile.path } returns "/usr/bin/python"
-            every { PythonSdkUtil.isVirtualEnv("/usr/bin/python") } returns false
-
-            action.update(event)
-
-            verify { presentation.isEnabledAndVisible = false }
+            verify { presentation.icon = PythonCommunityImplUVCommonIcons.UV }
         }
     }
 
@@ -135,6 +138,7 @@ class ConfigurePythonActionAbstractTest {
         private lateinit var notificationGroupManager: NotificationGroupManager
         private lateinit var notificationGroup: NotificationGroup
         private lateinit var notification: Notification
+        private lateinit var jdkTable: ProjectJdkTable
 
         @BeforeEach
         fun setUpMocks() {
@@ -143,28 +147,29 @@ class ConfigurePythonActionAbstractTest {
             notificationGroupManager = mockk(relaxed = true)
             notificationGroup = mockk(relaxed = true)
             notification = mockk(relaxed = true)
+            jdkTable = mockk(relaxed = true)
 
             mockkStatic(PythonSdkUtil::class)
             mockkStatic(PyConfigurableInterpreterList::class)
-            mockkStatic(SdkConfigurationUtil::class)
             mockkStatic(NotificationGroupManager::class)
-            mockkStatic(PythonSdkType::class)
+            mockkStatic(ProjectJdkTable::class)
+            mockkObject(EnvironmentDetector)
+            mockkObject(SdkFactory)
 
             every { NotificationGroupManager.getInstance() } returns notificationGroupManager
             every { notificationGroupManager.getNotificationGroup(any()) } returns notificationGroup
             every {
                 notificationGroup.createNotification(any(), any(), any<NotificationType>())
             } returns notification
+            every { notification.setIcon(any()) } returns notification
             every { notification.notify(any()) } just Runs
+            every { ProjectJdkTable.getInstance() } returns jdkTable
+            every { jdkTable.allJdks } returns emptyArray()
         }
 
         @AfterEach
         fun tearDown() {
-            unmockkStatic(PythonSdkUtil::class)
-            unmockkStatic(PyConfigurableInterpreterList::class)
-            unmockkStatic(SdkConfigurationUtil::class)
-            unmockkStatic(NotificationGroupManager::class)
-            unmockkStatic(PythonSdkType::class)
+            unmockkAll()
         }
 
         @Test
@@ -219,16 +224,16 @@ class ConfigurePythonActionAbstractTest {
 
         @Test
         fun `shows error when SDK creation fails`() {
-            val pythonSdkType: PythonSdkType = mockk(relaxed = true)
-
             every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
             every { virtualFile.isDirectory } returns true
             every { virtualFile.path } returns "/some/venv"
+            every { virtualFile.toNioPath() } returns Path.of("/some/venv")
             every { PythonSdkUtil.getPythonExecutable("/some/venv") } returns "/some/venv/bin/python"
-            every { PyConfigurableInterpreterList.getInstance(project) } returns interpreterList
-            every { interpreterList.model.projectSdks.values } returns mutableListOf()
-            every { PythonSdkType.getInstance() } returns pythonSdkType
-            every { SdkConfigurationUtil.createAndAddSDK("/some/venv/bin/python", pythonSdkType) } returns null
+            every { EnvironmentDetector.detectEnvironmentType("/some/venv/bin/python") } returns
+                PythonEnvironmentType.VIRTUALENV
+            every {
+                SdkFactory.createSdk("/some/venv/bin/python", PythonEnvironmentType.VIRTUALENV, Path.of("/some/venv"))
+            } returns null
 
             action.actionPerformed(event)
 
@@ -244,32 +249,33 @@ class ConfigurePythonActionAbstractTest {
         @Test
         fun `creates new SDK when not found in existing SDKs`() {
             val newSdk: Sdk = mockk(relaxed = true)
-            val pythonSdkType: PythonSdkType = mockk(relaxed = true)
-            val application: Application = mockk(relaxed = true)
-            val virtualFileManager: VirtualFileManager = mockk(relaxed = true)
             val messageSlot = slot<String>()
 
             action.lastSetSdkResult = ConfigurePythonActionAbstract.SetSdkResult.Success("module")
 
-            mockkStatic(ApplicationManager::class)
-            every { ApplicationManager.getApplication() } returns application
-            every { application.getService(any<Class<*>>()) } returns mockk(relaxed = true)
-            every { application.getService(VirtualFileManager::class.java) } returns virtualFileManager
-
             every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
             every { virtualFile.isDirectory } returns true
             every { virtualFile.path } returns "/some/venv"
+            every { virtualFile.toNioPath() } returns Path.of("/some/venv")
             every { PythonSdkUtil.getPythonExecutable("/some/venv") } returns "/some/venv/bin/python"
-            every { PyConfigurableInterpreterList.getInstance(project) } returns interpreterList
-            every { interpreterList.model.projectSdks.values } returns mutableListOf()
-            every { PythonSdkType.getInstance() } returns pythonSdkType
-            every { SdkConfigurationUtil.createAndAddSDK("/some/venv/bin/python", pythonSdkType) } returns newSdk
+            every { EnvironmentDetector.detectEnvironmentType("/some/venv/bin/python") } returns
+                PythonEnvironmentType.UV
+            every {
+                SdkFactory.createSdk(
+                    "/some/venv/bin/python",
+                    PythonEnvironmentType.UV,
+                    Path.of("/some/venv"),
+                )
+            } returns
+                newSdk
+            every { SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.UV) } returns
+                PythonCommunityImplUVCommonIcons.UV
             every { newSdk.name } returns "Python 3.11 (venv)"
 
             action.actionPerformed(event)
 
             verify {
-                SdkConfigurationUtil.createAndAddSDK("/some/venv/bin/python", pythonSdkType)
+                SdkFactory.createSdk("/some/venv/bin/python", PythonEnvironmentType.UV, Path.of("/some/venv"))
             }
             verify {
                 notificationGroup.createNotification(
@@ -278,9 +284,8 @@ class ConfigurePythonActionAbstractTest {
                     eq(NotificationType.INFORMATION),
                 )
             }
-            assert(messageSlot.captured.startsWith("Updated SDK for module to:"))
-
-            unmockkStatic(ApplicationManager::class)
+            assert(messageSlot.captured.contains("Updated SDK for module to:"))
+            assert(messageSlot.captured.contains("(uv)"))
         }
 
         @Test
@@ -293,8 +298,9 @@ class ConfigurePythonActionAbstractTest {
             every { virtualFile.isDirectory } returns true
             every { virtualFile.path } returns "/some/venv"
             every { PythonSdkUtil.getPythonExecutable("/some/venv") } returns "/some/venv/bin/python"
-            every { PyConfigurableInterpreterList.getInstance(project) } returns interpreterList
-            every { interpreterList.model.projectSdks.values } returns mutableListOf(existingSdk)
+            every { EnvironmentDetector.detectEnvironmentType("/some/venv/bin/python") } returns
+                PythonEnvironmentType.VIRTUALENV
+            every { jdkTable.allJdks } returns arrayOf(existingSdk)
             every { existingSdk.homePath } returns "/some/venv/bin/python"
 
             action.actionPerformed(event)
@@ -311,23 +317,19 @@ class ConfigurePythonActionAbstractTest {
         @Test
         fun `shows success notification on setSdk success`() {
             val existingSdk: Sdk = mockk(relaxed = true)
-            val application: Application = mockk(relaxed = true)
-            val virtualFileManager: VirtualFileManager = mockk(relaxed = true)
             val messageSlot = slot<String>()
 
             action.lastSetSdkResult = ConfigurePythonActionAbstract.SetSdkResult.Success("module")
-
-            mockkStatic(ApplicationManager::class)
-            every { ApplicationManager.getApplication() } returns application
-            every { application.getService(any<Class<*>>()) } returns mockk(relaxed = true)
-            every { application.getService(VirtualFileManager::class.java) } returns virtualFileManager
 
             every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
             every { virtualFile.isDirectory } returns true
             every { virtualFile.path } returns "/some/venv"
             every { PythonSdkUtil.getPythonExecutable("/some/venv") } returns "/some/venv/bin/python"
-            every { PyConfigurableInterpreterList.getInstance(project) } returns interpreterList
-            every { interpreterList.model.projectSdks.values } returns mutableListOf(existingSdk)
+            every { EnvironmentDetector.detectEnvironmentType("/some/venv/bin/python") } returns
+                PythonEnvironmentType.VIRTUALENV
+            every { SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.VIRTUALENV) } returns
+                PythonVenvIcons.VirtualEnv
+            every { jdkTable.allJdks } returns arrayOf(existingSdk)
             every { existingSdk.homePath } returns "/some/venv/bin/python"
             every { existingSdk.name } returns "Python 3.11 (venv)"
 
@@ -340,10 +342,9 @@ class ConfigurePythonActionAbstractTest {
                     eq(NotificationType.INFORMATION),
                 )
             }
-            assert(messageSlot.captured.startsWith("Updated SDK for module to:"))
+            assert(messageSlot.captured.contains("Updated SDK for module to:"))
             assert(messageSlot.captured.contains("Python 3.11 (venv)"))
-
-            unmockkStatic(ApplicationManager::class)
+            assert(messageSlot.captured.contains("(virtualenv)"))
         }
     }
 

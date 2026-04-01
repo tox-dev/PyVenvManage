@@ -16,7 +16,6 @@
                 class="com.github.pyvenvmanage.actions.ConfigurePythonActionProject"
                 text="Set as Project Interpreter"
                 description="Configure this Python to be the projects interpreter."
-                icon="com.jetbrains.python.icons.PythonIcons.Python.Virtualenv"
         >
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
@@ -25,7 +24,6 @@
                 class="com.github.pyvenvmanage.actions.ConfigurePythonActionModule"
                 text="Set as Module Interpreter"
                 description="Configure this Python to be the current modules interpreter."
-                icon="com.jetbrains.python.icons.PythonIcons.Python.Virtualenv"
         >
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>

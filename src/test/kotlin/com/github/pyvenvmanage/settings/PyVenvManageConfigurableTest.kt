@@ -25,6 +25,7 @@ import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.CoroutineSupport
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.tabs.impl.IslandsPainterProvider
 
 class PyVenvManageConfigurableTest {
     private lateinit var configurable: PyVenvManageConfigurable
@@ -37,6 +38,7 @@ class PyVenvManageConfigurableTest {
         mockkStatic(ApplicationManager::class)
         every { ApplicationManager.getApplication() } returns application
         every { application.getService(CoroutineSupport::class.java) } returns mockk(relaxed = true)
+        every { application.getService(IslandsPainterProvider::class.java) } returns mockk(relaxed = true)
 
         settings = mockk(relaxed = true)
         mockkObject(PyVenvManageSettings.Companion)

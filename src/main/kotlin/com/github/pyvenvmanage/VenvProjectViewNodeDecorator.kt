@@ -1,6 +1,6 @@
 package com.github.pyvenvmanage
 
-import javax.swing.Icon
+import java.nio.file.Path
 
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
@@ -8,6 +8,10 @@ import com.intellij.ide.projectView.ProjectViewNodeDecorator
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.ui.SimpleTextAttributes
 
+import com.jetbrains.python.sdk.PythonSdkUtil
+
+import com.github.pyvenvmanage.sdk.EnvironmentDetector
+import com.github.pyvenvmanage.sdk.SdkFactory
 import com.github.pyvenvmanage.settings.PyVenvManageSettings
 
 class VenvProjectViewNodeDecorator : ProjectViewNodeDecorator {
@@ -23,6 +27,17 @@ class VenvProjectViewNodeDecorator : ProjectViewNodeDecorator {
             val settings = PyVenvManageSettings.getInstance()
             val venvInfo = VenvVersionCache.getInstance().getInfo(pyVenvCfgPath.toString())
             thisLogger().debug("VenvInfo from cache: $venvInfo")
+
+            val venvRoot = Path.of(pyVenvCfgPath.toString()).parent
+            val pythonExecutable = venvRoot?.let { PythonSdkUtil.getPythonExecutable(it.toString()) }
+
+            if (pythonExecutable != null) {
+                val envType = EnvironmentDetector.detectEnvironmentType(pythonExecutable)
+                val icon = SdkFactory.getIconForEnvironmentType(envType)
+                thisLogger().debug("Setting icon for environment type: $envType")
+                data.setIcon(icon)
+            }
+
             venvInfo?.let { info ->
                 data.presentableText?.let { fileName ->
                     val decoration = settings.formatDecoration(info)
@@ -32,25 +47,6 @@ class VenvProjectViewNodeDecorator : ProjectViewNodeDecorator {
                     data.addText(decoration, SimpleTextAttributes.GRAY_ATTRIBUTES)
                 } ?: thisLogger().debug("No presentableText for decoration")
             } ?: thisLogger().debug("No venvInfo found for $pyVenvCfgPath")
-            virtualenvIcon?.let { data.setIcon(it) }
         }
-    }
-
-    companion object {
-        val virtualenvIcon: Icon? by lazy {
-            loadIcon("com.intellij.python.venv.icons.PythonVenvIcons", "VirtualEnv")
-                ?: loadIcon("com.jetbrains.python.icons.PythonIcons\$Python", "Virtualenv")
-        }
-
-        private fun loadIcon(
-            className: String,
-            fieldName: String,
-        ): Icon? =
-            try {
-                val clazz = Class.forName(className)
-                clazz.getField(fieldName).get(null) as? Icon
-            } catch (_: Exception) {
-                null
-            }
     }
 }

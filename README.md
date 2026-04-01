@@ -12,19 +12,25 @@
 **PyVenvManage** simplifies Python virtual environment management in JetBrains IDEs.
 
 Managing multiple Python interpreters across different virtual environments (for testing against various Python versions
-with tools like `tox` or `nox`) traditionally requires navigating through multiple dialogs in PyCharm or other JetBrains IDEs.
-PyVenvManage streamlines this by enabling quick interpreter selection directly from the project view with just a right-click.
+with tools like `tox` or `nox`) traditionally requires navigating through multiple dialogs in PyCharm or other JetBrains
+IDEs. PyVenvManage streamlines this by enabling quick interpreter selection directly from the project view with just a
+right-click.
 
 ## Features
 
 - **Quick interpreter switching**: Right-click any virtual environment folder to set it as your project or module
   interpreter instantly
-- **Visual identification**: Virtual environment folders display with a distinctive icon and customizable decoration
-  (e.g., `.venv [3.11.5 - CPython]`) in the project view
+- **Smart environment detection**: Automatically detects environment types (UV, Conda, Poetry, Hatch, Pipenv,
+  virtualenv) and sets appropriate metadata and icons
+- **Dynamic icons**: Tree view and context menus display environment-specific icons (UV, Conda, Poetry, Hatch, Pipenv)
+  based on detection
+- **Visual identification**: Virtual environment folders display with customizable decoration (e.g.,
+  `.venv [3.11.5 - CPython]`) in the project view
 - **Customizable decorations**: Configure which fields to show (Python version, implementation, system site-packages,
   creator tool), their order, and the format via Settings
 - **Multi-IDE support**: Works with PyCharm (Community and Professional), IntelliJ IDEA, GoLand, CLion, and RustRover
-- **Smart detection**: Automatically detects Python virtual environments by recognizing `pyvenv.cfg` files
+- **Smart association**: In-project virtual environments are associated with the current project; external environments
+  (Poetry cache, Hatch cache, Pipenv virtualenvs) remain global
 - **Cached version display**: Python version information is cached for performance and automatically refreshed when
   `pyvenv.cfg` files change
 
@@ -32,13 +38,15 @@ PyVenvManage streamlines this by enabling quick interpreter selection directly f
 
 ## Supported IDEs
 
-Version 2025.1 or later of:
+Version 2026.1 or later of:
 
 - PyCharm (Community and Professional)
 - IntelliJ IDEA (Community and Ultimate)
 - GoLand
 - CLion
 - RustRover
+
+**Note**: Version 2.2.x supports PyCharm 2025.1 and earlier.
 
 ## Install
 
@@ -51,9 +59,9 @@ The official plugin page is at https://plugins.jetbrains.com/plugin/20536-pyvenv
 ![usage video](anim.gif?raw=true)
 
 1. Create or navigate to a Python virtual environment folder in your project
-2. Right-click the virtual environment folder (e.g., `venv`, `.venv`, or any folder with a `pyvenv.cfg`)
-3. Select **Set as Project Interpreter** or **Set as Module Interpreter**
-4. The interpreter is configured instantly with a confirmation notification
+1. Right-click the virtual environment folder (e.g., `venv`, `.venv`, or any folder with a `pyvenv.cfg`)
+1. Select **Set as Project Interpreter** or **Set as Module Interpreter**
+1. The interpreter is configured instantly with a confirmation notification
 
 ## Settings
 

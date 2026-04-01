@@ -24,7 +24,7 @@ class IdeaFrame(
         get() =
             find<ContainerFixture>(
                 byXpath("ProjectViewTree", "//div[@class='MyProjectViewTree']"),
-                Duration.ofSeconds(30),
+                Duration.ofSeconds(60),
             )
 
     fun isDumbMode(): Boolean =
@@ -40,4 +40,34 @@ class IdeaFrame(
         """,
             true,
         )
+
+    fun activateProjectView() {
+        runJs(
+            """
+            const frameHelper = com.intellij.openapi.wm.impl.ProjectFrameHelper.getFrameHelper(component)
+            if (frameHelper) {
+                const project = frameHelper.getProject()
+                if (project) {
+                    com.intellij.openapi.wm.ToolWindowManager.getInstance(project).getToolWindow("Project").activate(null)
+                }
+            }
+        """,
+            true,
+        )
+    }
+
+    fun openProjectViaAction(projectPath: String) {
+        val escapedPath = projectPath.replace("\\", "\\\\").replace("'", "\\'")
+        runJs(
+            """
+            const path = java.nio.file.Path.of('$escapedPath')
+            const frameHelper = com.intellij.openapi.wm.impl.ProjectFrameHelper.getFrameHelper(component)
+            const currentProject = frameHelper ? frameHelper.getProject() : null
+            com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater(function() {
+                com.intellij.ide.impl.ProjectUtil.openOrImport(path, currentProject, false)
+            })
+        """,
+            true,
+        )
+    }
 }

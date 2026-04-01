@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+### Added
+
+- Environment type detection for UV, Conda, Poetry, Hatch, and Pipenv virtual environments
+- Dynamic icons in tree view and context menu based on detected environment type
+- Proper SDK flavor data for each environment type (UV, Poetry, Hatch, etc.)
+- Project association for in-project virtual environments
+- Support for configurable environment paths via environment variables (HATCH_DATA_DIR, WORKON_HOME, etc.)
+- Comprehensive logging for environment detection debugging
+
+### Changed
+
+- Updated to PyCharm 2026.1 platform API
+- Minimum supported version is now PyCharm 2026.1 (build 261)
+- Removed module-level interpreter action (kept project-level only)
+- SDK creation now uses proper SdkModificator API with write actions
+- Environment detection checks pyvenv.cfg for UV marker, .gitignore for Hatch marker, and standard cache locations
+
+### Fixed
+
+- Icon loading errors on PyCharm 2026.1 by removing hardcoded icon references
+- SDK duplicate registration errors by checking global SDK table before creating new SDKs
+- Threading assertions by properly wrapping SDK modifications in write actions
+
 ## [2.2.7] - 2026-03-31
 
 ${GITHUB_EVENT_RELEASE_BODY}
@@ -16,8 +39,10 @@ ${GITHUB_EVENT_RELEASE_BODY}
 - Standardize .github files to .yaml suffix by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/142
 - Clarify the venv selection painfulness by @andrask in https://github.com/tox-dev/PyVenvManage/pull/143
 - 🔒 ci(workflows): add zizmor security auditing by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/154
-- 🐛 fix(icons): resolve NoSuchFieldError on IntelliJ 2026.1 by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/157
-- 🔒 fix(ci): split release workflow for proper credential scoping by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/158
+- 🐛 fix(icons): resolve NoSuchFieldError on IntelliJ 2026.1 by @gaborbernat in
+  https://github.com/tox-dev/PyVenvManage/pull/157
+- 🔒 fix(ci): split release workflow for proper credential scoping by @gaborbernat in
+  https://github.com/tox-dev/PyVenvManage/pull/158
 
 ## [2.2.5] - 2026-01-30
 
@@ -26,13 +51,15 @@ ${GITHUB_EVENT_RELEASE_BODY}
 ## [2.2.4] - 2026-01-30
 
 - Bump version to `2.2.4-dev` by @github-actions[bot] in https://github.com/tox-dev/PyVenvManage/pull/123
-- Use RELEASE_TOKEN for post-release PR and auto-merge by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/124
+- Use RELEASE_TOKEN for post-release PR and auto-merge by @gaborbernat in
+  https://github.com/tox-dev/PyVenvManage/pull/124
 
 ## [2.2.3] - 2026-01-30
 
 - Bump version to `2.2.3-dev` by @github-actions[bot] in https://github.com/tox-dev/PyVenvManage/pull/120
 - Add auto-merge workflow for trusted contributors by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/121
-- Make Python dependency optional to fix marketplace verification by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/122
+- Make Python dependency optional to fix marketplace verification by @gaborbernat in
+  https://github.com/tox-dev/PyVenvManage/pull/122
 
 ## [2.2.2] - 2026-01-29
 
@@ -48,13 +75,16 @@ ${GITHUB_EVENT_RELEASE_BODY}
 ## [2.2.0] - 2026-01-04
 
 - Changelog update - `v2.1.2` by @github-actions[bot] in https://github.com/tox-dev/PyVenvManage/pull/78
-- Optimize GitHub Actions: parallelize verification and fix disk space by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/99
-- Refactor to modern Kotlin idioms and fix deprecated API by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/100
+- Optimize GitHub Actions: parallelize verification and fix disk space by @gaborbernat in
+  https://github.com/tox-dev/PyVenvManage/pull/99
+- Refactor to modern Kotlin idioms and fix deprecated API by @gaborbernat in
+  https://github.com/tox-dev/PyVenvManage/pull/100
 - Add cache invalidation with file watcher by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/101
 - Improve error UX with notifications by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/102
 - Add plugin settings page by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/103
 - Improve plugin description and documentation by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/105
-- Enhance project view decorations and add 100% test coverage by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/104
+- Enhance project view decorations and add 100% test coverage by @gaborbernat in
+  https://github.com/tox-dev/PyVenvManage/pull/104
 
 ## [2.1.2] - 2025-10-23
 
@@ -127,22 +157,22 @@ ${GITHUB_EVENT_RELEASE_BODY}
 
 - Removed the usage of the deprecated PythonSdkType.getPythonExecutable API
 
-[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.7...HEAD
-[2.2.7]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.6...v2.2.7
-[2.2.6]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.5...v2.2.6
-[2.2.5]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.4...v2.2.5
-[2.2.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.3...v2.2.4
-[2.2.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.2...v2.2.3
-[2.2.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.1...v2.2.2
-[2.2.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.0...v2.2.1
-[2.2.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.2...v2.2.0
-[2.1.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.0...v2.1.2
-[2.1.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.1...v2.1.0
-[2.0.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.0...v2.0.1
-[2.0.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.4.0...v2.0.0
-[1.4.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.4...v1.4.0
-[1.3.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.3...v1.3.4
-[1.3.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.2...v1.3.3
-[1.3.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.1...v1.3.2
-[1.3.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/pyvenvmanage/PyVenvManage/commits/v1.3.0
+[1.3.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.0...v1.3.1
+[1.3.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.1...v1.3.2
+[1.3.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.2...v1.3.3
+[1.3.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.3...v1.3.4
+[1.4.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.4...v1.4.0
+[2.0.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.4.0...v2.0.0
+[2.0.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.0...v2.0.1
+[2.1.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.1...v2.1.0
+[2.1.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.0...v2.1.2
+[2.2.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.2...v2.2.0
+[2.2.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.0...v2.2.1
+[2.2.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.1...v2.2.2
+[2.2.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.2...v2.2.3
+[2.2.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.3...v2.2.4
+[2.2.5]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.4...v2.2.5
+[2.2.6]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.5...v2.2.6
+[2.2.7]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.6...v2.2.7
+[unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.7...HEAD

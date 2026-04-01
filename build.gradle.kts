@@ -56,7 +56,7 @@ dependencies {
     testImplementation(libs.remoteRobot)
     testImplementation(libs.remoteRobotFixtures)
     intellijPlatform {
-        pycharmCommunity(platformVersion)
+        pycharm(platformVersion)
         bundledPlugin("PythonCore")
         pluginVerifier()
         zipSigner()
@@ -124,7 +124,7 @@ intellijPlatform {
                     listOf(IntelliJPlatformType.fromCode(verifyIde))
                 } else {
                     listOf(
-                        IntelliJPlatformType.PyCharmCommunity,
+                        IntelliJPlatformType.PyCharm,
                         IntelliJPlatformType.PyCharmProfessional,
                     )
                 }
@@ -150,6 +150,17 @@ kover {
         total {
             xml {
                 onCheck = true
+            }
+        }
+        filters {
+            excludes {
+                // SdkFactory.createSdk requires full IntelliJ platform (WriteAction, ProjectJdkTable);
+                // EnvironmentDetector has platform-specific branches (Windows/Linux) untestable on macOS.
+                // Both are covered by UI tests.
+                classes(
+                    "com.github.pyvenvmanage.sdk.SdkFactory",
+                    "com.github.pyvenvmanage.sdk.EnvironmentDetector",
+                )
             }
         }
         verify {
@@ -222,6 +233,7 @@ val runIdeForUiTests by intellijPlatformTesting.runIde.registering {
                     add("-Djb.consents.confirmation.enabled=false")
                     add("-Didea.trust.all.projects=true")
                     add("-Dide.show.tips.on.startup.default.value=false")
+                    add("-Dskiko.renderApi=SOFTWARE")
                     val isMac =
                         org.gradle.internal.os.OperatingSystem
                             .current()
