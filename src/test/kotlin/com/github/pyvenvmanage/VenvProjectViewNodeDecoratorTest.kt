@@ -2,11 +2,14 @@ package com.github.pyvenvmanage
 
 import java.nio.file.Files
 import java.nio.file.Path
+import javax.swing.Icon
 
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.mockkStatic
 import io.mockk.unmockkObject
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -19,6 +22,11 @@ import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.SimpleTextAttributes
 
+import com.jetbrains.python.sdk.PythonSdkUtil
+
+import com.github.pyvenvmanage.sdk.EnvironmentDetector
+import com.github.pyvenvmanage.sdk.PythonEnvironmentType
+import com.github.pyvenvmanage.sdk.SdkFactory
 import com.github.pyvenvmanage.settings.PyVenvManageSettings
 
 class VenvProjectViewNodeDecoratorTest {
@@ -42,6 +50,8 @@ class VenvProjectViewNodeDecoratorTest {
         private lateinit var versionCache: VenvVersionCache
         private lateinit var settings: PyVenvManageSettings
 
+        private lateinit var mockIcon: Icon
+
         @BeforeEach
         fun setUpMocks() {
             mockkObject(VenvUtils)
@@ -60,6 +70,13 @@ class VenvProjectViewNodeDecoratorTest {
                     info.creator?.removePrefix(" - ")?.let { parts.add(it) }
                     " [${parts.joinToString(" - ")}]"
                 }
+            mockkStatic(PythonSdkUtil::class)
+            mockkObject(EnvironmentDetector)
+            mockkObject(SdkFactory)
+            mockIcon = mockk()
+            every { PythonSdkUtil.getPythonExecutable(any()) } returns "/mock/bin/python"
+            every { EnvironmentDetector.detectEnvironmentType(any()) } returns PythonEnvironmentType.VIRTUALENV
+            every { SdkFactory.getIconForEnvironmentType(any()) } returns mockIcon
         }
 
         @AfterEach
@@ -67,6 +84,9 @@ class VenvProjectViewNodeDecoratorTest {
             unmockkObject(VenvUtils)
             unmockkObject(VenvVersionCache.Companion)
             unmockkObject(PyVenvManageSettings.Companion)
+            unmockkStatic(PythonSdkUtil::class)
+            unmockkObject(EnvironmentDetector)
+            unmockkObject(SdkFactory)
         }
 
         @Test
