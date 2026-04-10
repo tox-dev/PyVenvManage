@@ -31,7 +31,7 @@ jobs:
           distribution: zulu
           java-version: 21
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
       - name: 🔨 Build plugin
         run: ./gradlew --console=plain buildPlugin
       - name: 📁 Prepare artifact
@@ -74,7 +74,7 @@ jobs:
           distribution: zulu
           java-version: 21
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
       - name: 💾 Cache verifier IDEs
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
@@ -110,7 +110,7 @@ jobs:
           distribution: zulu
           java-version: 21
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
       - name: 🔍 Run linter
         run: ./gradlew ktlintCheck
 
@@ -133,7 +133,7 @@ jobs:
           distribution: zulu
           java-version: 21
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
       - name: ✅ Run tests with coverage
         run: ./gradlew test koverVerify
 
@@ -156,7 +156,7 @@ jobs:
           distribution: zulu
           java-version: 21
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6
+        uses: gradle/actions/setup-gradle@50e97c2cd7a37755bbfafc9c5b7cafaece252f6e # v6
       - name: 🖥️ Run UI tests
         run: |
           export DISPLAY=:99.0
