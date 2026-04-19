@@ -42,7 +42,7 @@ jobs:
           unzip "$FILENAME" -d content
           echo "filename=${FILENAME:0:-4}" >> $GITHUB_OUTPUT
       - name: 📤 Upload artifact
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ${{ steps.artifact.outputs.filename }}
           path: ./build/distributions/content/*/*
@@ -86,7 +86,7 @@ jobs:
           MATRIX_IDE: ${{ matrix.ide }}
       - name: 📤 Upload results
         if: ${{ always() }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: pluginVerifier-result-${{ matrix.ide }}
           path: ${{ github.workspace }}/build/reports/pluginVerifier
