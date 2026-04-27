@@ -10,7 +10,7 @@ ktlint = "14.2.0"
 remoteRobot = "0.11.23"
 taskinfo = "3.0.2"
 testLogger = "4.0.0"
-versionPlugin = "0.53.0"
+versionPlugin = "0.54.0"
 versionUpdate = "1.1.0"
 
 [libraries]
