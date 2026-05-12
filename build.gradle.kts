@@ -124,7 +124,7 @@ intellijPlatform {
             }
     }
     pluginVerification {
-        ignoredProblemsFile = layout.projectDirectory.file("gradle/verifier-ignored-problems.txt").asFile
+        ignoredProblemsFile = layout.projectDirectory.file("gradle/verifier-ignored-problems.txt")
         ides {
             val verifyIde = providers.gradleProperty("verifyIde").orNull
             val ideTypes =
