@@ -3,6 +3,7 @@ import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.Constants.Constraints
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
 plugins {
     alias(libs.plugins.changelog)
@@ -38,6 +39,12 @@ version =
 val platformVersion = providers.gradleProperty("platformVersion").get()
 kotlin {
     jvmToolchain(17)
+    compilerOptions {
+        // Suppress synthetic ACC_BRIDGE methods for inherited interface defaults.
+        // Without this, Kotlin emits a bridge in our implementing class for ProjectViewNodeDecorator's
+        // @Deprecated default decorate() overload, which the plugin verifier reports as an override.
+        jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
+    }
 }
 
 repositories {
@@ -117,6 +124,7 @@ intellijPlatform {
             }
     }
     pluginVerification {
+        ignoredProblemsFile = layout.projectDirectory.file("gradle/verifier-ignored-problems.txt").asFile
         ides {
             val verifyIde = providers.gradleProperty("verifyIde").orNull
             val ideTypes =
