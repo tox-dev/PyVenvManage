@@ -13,6 +13,9 @@
 // is marked @ApiStatus.Internal at the package-info level. Only PythonVenvIcons
 // is public, which would erase per-environment branding.
 
+// DEBUG: wildcard to confirm the file is parsed and pluginId matches. Remove once verified.
+com.github.pyvenvmanage.pyvenv::.*
+
 // SDK flavors
 com.github.pyvenvmanage.pyvenv::Internal class com\.jetbrains\.python\.sdk\.flavors\.VirtualEnvSdkFlavor reference
 com.github.pyvenvmanage.pyvenv::Internal method com\.jetbrains\.python\.sdk\.flavors\.VirtualEnvSdkFlavor\.getInstance\(\) invocation
