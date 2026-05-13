@@ -1,3 +1,4 @@
+import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.Constants.Constraints
@@ -142,7 +143,7 @@ intellijPlatform {
         // make com.intellij.modules.python unresolvable on macOS. Linux tar.gz ships split jars
         // matching the layout and "ignore" would crash trying to read truly absent jars there,
         // so this override is macOS-only.
-        if (org.gradle.internal.os.OperatingSystem.current().isMacOsX) {
+        if (OperatingSystem.current().isMacOsX) {
             freeArgs.add("-missing-layout-classpath-file")
             freeArgs.add("ignore")
         }
