@@ -135,6 +135,14 @@ intellijPlatform {
                 FailureLevel.COMPATIBILITY_PROBLEMS,
                 FailureLevel.OVERRIDE_ONLY_API_USAGES,
             )
+        // PyCharm Pro macOS dmg distribution packs nested modules into a single jar per plugin
+        // (e.g. plugins/grazie/lib/modules/*.jar paths declared by product-info.json don't exist
+        // on disk; the classes live inside the parent plugin jar instead). The default
+        // skip-warn behaviour drops these layout components — including transitive paths that
+        // make com.intellij.modules.python unresolvable on macOS. Linux tar.gz ships split jars
+        // matching the layout and doesn't hit this. "ignore" processes layout components as-is.
+        freeArgs.add("-missing-layout-classpath-file")
+        freeArgs.add("ignore")
         ides {
             val verifyIde = providers.gradleProperty("verifyIde").orNull
             val ideTypes =
