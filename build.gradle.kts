@@ -1,8 +1,11 @@
+import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.Constants.Constraints
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
 plugins {
     alias(libs.plugins.changelog)
@@ -38,6 +41,12 @@ version =
 val platformVersion = providers.gradleProperty("platformVersion").get()
 kotlin {
     jvmToolchain(17)
+    compilerOptions {
+        // Suppress synthetic ACC_BRIDGE methods for inherited interface defaults.
+        // Without this, Kotlin emits a bridge in our implementing class for ProjectViewNodeDecorator's
+        // @Deprecated default decorate() overload, which the plugin verifier reports as an override.
+        jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
+    }
 }
 
 repositories {
@@ -117,6 +126,27 @@ intellijPlatform {
             }
     }
     pluginVerification {
+        // The verifier's ignoredProblemsFile filters CompatibilityProblem instances only,
+        // not ApiUsage (which is what INTERNAL_API_USAGES is). The 21 internal usages from
+        // SdkFactory/EnvironmentDetector reach into per-tool PyCharm SDK packages
+        // (uv, hatch.sdk, poetry, pipenv) and per-tool icon classes, all sealed behind
+        // @ApiStatus.Internal package-info markers with no public alternative on 261.
+        failureLevel =
+            listOf(
+                FailureLevel.COMPATIBILITY_PROBLEMS,
+                FailureLevel.OVERRIDE_ONLY_API_USAGES,
+            )
+        // PyCharm Pro macOS dmg distribution packs nested modules into a single jar per plugin
+        // (e.g. plugins/grazie/lib/modules/*.jar paths declared by product-info.json don't exist
+        // on disk; the classes live inside the parent plugin jar instead). The default
+        // skip-warn behaviour drops these layout components — including transitive paths that
+        // make com.intellij.modules.python unresolvable on macOS. Linux tar.gz ships split jars
+        // matching the layout and "ignore" would crash trying to read truly absent jars there,
+        // so this override is macOS-only.
+        if (OperatingSystem.current().isMacOsX) {
+            freeArgs.add("-missing-layout-classpath-file")
+            freeArgs.add("ignore")
+        }
         ides {
             val verifyIde = providers.gradleProperty("verifyIde").orNull
             val ideTypes =

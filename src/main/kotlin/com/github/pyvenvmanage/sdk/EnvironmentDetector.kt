@@ -11,7 +11,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 
-import com.jetbrains.python.sdk.legacy.PythonSdkUtil
+import com.jetbrains.python.sdk.PythonSdkUtil
 
 enum class PythonEnvironmentType {
     UV,
