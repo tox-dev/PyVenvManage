@@ -3,6 +3,7 @@ import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.Constants.Constraints
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
 plugins {
@@ -124,7 +125,16 @@ intellijPlatform {
             }
     }
     pluginVerification {
-        ignoredProblemsFile = layout.projectDirectory.file("gradle/verifier-ignored-problems.txt")
+        // The verifier's ignoredProblemsFile filters CompatibilityProblem instances only,
+        // not ApiUsage (which is what INTERNAL_API_USAGES is). The 21 internal usages from
+        // SdkFactory/EnvironmentDetector reach into per-tool PyCharm SDK packages
+        // (uv, hatch.sdk, poetry, pipenv) and per-tool icon classes, all sealed behind
+        // @ApiStatus.Internal package-info markers with no public alternative on 261.
+        failureLevel =
+            listOf(
+                FailureLevel.COMPATIBILITY_PROBLEMS,
+                FailureLevel.OVERRIDE_ONLY_API_USAGES,
+            )
         ides {
             val verifyIde = providers.gradleProperty("verifyIde").orNull
             val ideTypes =
