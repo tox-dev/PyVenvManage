@@ -17,6 +17,6 @@ repos:
           - prettier@3.6.2
           - "@prettier/plugin-xml@3.4.2"
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.24.1
+    rev: v1.25.2
     hooks:
       - id: zizmor
