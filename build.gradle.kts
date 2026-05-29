@@ -103,7 +103,10 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            untilBuild = provider { null }
+            // The 2.3.x line targets the 2026.1 (261) Python SDK API. Build 262 changed
+            // UvSdkAdditionalData, VirtualEnvSdkFlavor, PythonSdkUtil.isVirtualEnv and the uv
+            // icon package incompatibly, so cap here and ship 262 support from the 2.4.x line.
+            untilBuild = "261.*"
         }
     }
 
