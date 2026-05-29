@@ -1,5 +1,7 @@
 package com.github.pyvenvmanage
 
+import com.intellij.ide.plugins.PluginManager
+import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -28,20 +30,8 @@ class PythonRequiredStartupActivity : ProjectActivity {
             ).notify(project)
     }
 
-    private fun isPythonPluginAvailable(): Boolean {
-        val pythonModuleId = PluginId.getId("com.intellij.modules.python")
-        val pythonCoreId = PluginId.getId("PythonCore")
-        return (
-            com.intellij.ide.plugins.PluginManagerCore
-                .getPlugin(pythonModuleId) != null &&
-                !com.intellij.ide.plugins.PluginManagerCore
-                    .isDisabled(pythonModuleId)
-        ) ||
-            (
-                com.intellij.ide.plugins.PluginManagerCore
-                    .getPlugin(pythonCoreId) != null &&
-                    !com.intellij.ide.plugins.PluginManagerCore
-                        .isDisabled(pythonCoreId)
-            )
-    }
+    private fun isPythonPluginAvailable(): Boolean =
+        isEnabled(PluginId.getId("com.intellij.modules.python")) || isEnabled(PluginId.getId("PythonCore"))
+
+    private fun isEnabled(id: PluginId): Boolean = PluginManager.isPluginInstalled(id) && !PluginManagerCore.isDisabled(id)
 }
