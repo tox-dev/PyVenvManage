@@ -5,7 +5,9 @@ import java.nio.file.Path
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
+import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
 import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
@@ -40,7 +42,7 @@ class SdkFactoryTest {
         every { app.getService(VirtualFilePointerManager::class.java) } returns mockk(relaxed = true)
         mockkStatic(PythonPluginDisposable::class)
         every { PythonPluginDisposable.getInstance() } returns mockk<Disposable>(relaxed = true)
-        mockkStatic(VirtualEnvSdkFlavor::class)
+        mockkObject(VirtualEnvSdkFlavor.Companion)
         every { VirtualEnvSdkFlavor.getInstance() } returns mockk(relaxed = true)
     }
 
@@ -48,7 +50,7 @@ class SdkFactoryTest {
     fun tearDown() {
         unmockkStatic(ApplicationManager::class)
         unmockkStatic(PythonPluginDisposable::class)
-        unmockkStatic(VirtualEnvSdkFlavor::class)
+        unmockkObject(VirtualEnvSdkFlavor.Companion)
     }
 
     @Test
