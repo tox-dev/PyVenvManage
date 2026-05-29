@@ -29,7 +29,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.python.community.impl.uv.common.icons.PythonCommunityImplUVCommonIcons
+import com.intellij.python.uv.common.icons.PythonUvCommonIcons
 import com.intellij.python.venv.icons.PythonVenvIcons
 
 import com.jetbrains.python.configuration.PyConfigurableInterpreterList
@@ -123,11 +123,11 @@ class ConfigurePythonActionAbstractTest {
             every { EnvironmentDetector.detectEnvironmentType("/some/venv/bin/python") } returns
                 PythonEnvironmentType.UV
             every { SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.UV) } returns
-                PythonCommunityImplUVCommonIcons.UV
+                PythonUvCommonIcons.UV
 
             action.update(event)
 
-            verify { presentation.icon = PythonCommunityImplUVCommonIcons.UV }
+            verify { presentation.icon = PythonUvCommonIcons.UV }
         }
     }
 
@@ -269,7 +269,7 @@ class ConfigurePythonActionAbstractTest {
             } returns
                 newSdk
             every { SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.UV) } returns
-                PythonCommunityImplUVCommonIcons.UV
+                PythonUvCommonIcons.UV
             every { newSdk.name } returns "Python 3.11 (venv)"
 
             action.actionPerformed(event)

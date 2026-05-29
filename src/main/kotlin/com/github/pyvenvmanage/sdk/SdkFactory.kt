@@ -10,16 +10,16 @@ import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
 import com.intellij.python.community.impl.conda.icons.PythonCommunityImplCondaIcons
 import com.intellij.python.community.impl.pipenv.PIPENV_ICON
 import com.intellij.python.community.impl.poetry.common.icons.PythonCommunityImplPoetryCommonIcons
-import com.intellij.python.community.impl.uv.common.icons.PythonCommunityImplUVCommonIcons
 import com.intellij.python.hatch.icons.PythonHatchIcons
+import com.intellij.python.uv.common.icons.PythonUvCommonIcons
 import com.intellij.python.venv.icons.PythonVenvIcons
+import com.intellij.python.venv.sdk.flavors.VirtualEnvSdkFlavor
 
 import com.jetbrains.python.hatch.sdk.HatchSdkAdditionalData
 import com.jetbrains.python.sdk.PythonSdkAdditionalData
 import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.flavors.PyFlavorAndData
 import com.jetbrains.python.sdk.flavors.PyFlavorData
-import com.jetbrains.python.sdk.flavors.VirtualEnvSdkFlavor
 import com.jetbrains.python.sdk.pipenv.PyPipEnvSdkFlavor
 import com.jetbrains.python.sdk.poetry.PyPoetrySdkFlavor
 import com.jetbrains.python.sdk.uv.UvSdkAdditionalData
@@ -73,7 +73,7 @@ object SdkFactory {
             PythonEnvironmentType.UV -> {
                 val uvWorkingDir = findUvWorkingDir(projectBasePath)
                 val venvPath = Path.of(pythonExecutable).parent?.parent
-                UvSdkAdditionalData(uvWorkingDir, null, venvPath, null)
+                UvSdkAdditionalData(uvWorkingDir, null, venvPath?.toString(), null)
             }
 
             PythonEnvironmentType.POETRY -> {
@@ -129,7 +129,7 @@ object SdkFactory {
             PythonEnvironmentType.CONDA -> PythonCommunityImplCondaIcons.Anaconda
             PythonEnvironmentType.POETRY -> PythonCommunityImplPoetryCommonIcons.Poetry
             PythonEnvironmentType.HATCH -> PythonHatchIcons.Logo
-            PythonEnvironmentType.UV -> PythonCommunityImplUVCommonIcons.UV
+            PythonEnvironmentType.UV -> PythonUvCommonIcons.UV
             PythonEnvironmentType.PIPENV -> PIPENV_ICON
             PythonEnvironmentType.VIRTUALENV -> PythonVenvIcons.VirtualEnv
             PythonEnvironmentType.SYSTEM -> PythonVenvIcons.VirtualEnv

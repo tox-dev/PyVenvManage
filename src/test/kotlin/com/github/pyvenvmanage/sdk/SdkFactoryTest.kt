@@ -24,12 +24,12 @@ import com.intellij.openapi.vfs.pointers.VirtualFilePointerManager
 import com.intellij.python.community.impl.conda.icons.PythonCommunityImplCondaIcons
 import com.intellij.python.community.impl.pipenv.PIPENV_ICON
 import com.intellij.python.community.impl.poetry.common.icons.PythonCommunityImplPoetryCommonIcons
-import com.intellij.python.community.impl.uv.common.icons.PythonCommunityImplUVCommonIcons
 import com.intellij.python.hatch.icons.PythonHatchIcons
+import com.intellij.python.uv.common.icons.PythonUvCommonIcons
 import com.intellij.python.venv.icons.PythonVenvIcons
+import com.intellij.python.venv.sdk.flavors.VirtualEnvSdkFlavor
 
 import com.jetbrains.python.PythonPluginDisposable
-import com.jetbrains.python.sdk.flavors.VirtualEnvSdkFlavor
 
 class SdkFactoryTest {
     @BeforeEach
@@ -54,7 +54,7 @@ class SdkFactoryTest {
     @Test
     fun `getIconForEnvironmentType returns UV icon`() {
         assertEquals(
-            PythonCommunityImplUVCommonIcons.UV,
+            PythonUvCommonIcons.UV,
             SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.UV),
         )
     }

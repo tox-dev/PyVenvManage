@@ -53,6 +53,8 @@ repositories {
     mavenCentral()
     intellijPlatform {
         defaultRepositories()
+        // platformVersion targets a 2026.2 EAP build, which lives in the snapshots channel.
+        snapshots()
     }
 }
 
@@ -103,10 +105,7 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            // The 2.3.x line targets the 2026.1 (261) Python SDK API. Build 262 changed
-            // UvSdkAdditionalData, VirtualEnvSdkFlavor, PythonSdkUtil.isVirtualEnv and the uv
-            // icon package incompatibly, so cap here and ship 262 support from the 2.4.x line.
-            untilBuild = "261.*"
+            untilBuild = provider { null }
         }
     }
 
@@ -130,10 +129,11 @@ intellijPlatform {
     }
     pluginVerification {
         // The verifier's ignoredProblemsFile filters CompatibilityProblem instances only,
-        // not ApiUsage (which is what INTERNAL_API_USAGES is). The 21 internal usages from
+        // not ApiUsage (which is what INTERNAL_API_USAGES is). The internal usages from
         // SdkFactory/EnvironmentDetector reach into per-tool PyCharm SDK packages
-        // (uv, hatch.sdk, poetry, pipenv) and per-tool icon classes, all sealed behind
-        // @ApiStatus.Internal package-info markers with no public alternative on 261.
+        // (uv, hatch.sdk, poetry, pipenv) and per-tool icon classes, plus the
+        // PluginManagerCore plugin lookup, all sealed behind @ApiStatus.Internal with no
+        // public alternative on 262.
         failureLevel =
             listOf(
                 FailureLevel.COMPATIBILITY_PROBLEMS,

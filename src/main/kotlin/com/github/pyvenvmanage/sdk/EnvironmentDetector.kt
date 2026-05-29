@@ -11,8 +11,6 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 
-import com.jetbrains.python.sdk.PythonSdkUtil
-
 enum class PythonEnvironmentType {
     UV,
     CONDA,
@@ -71,7 +69,7 @@ object EnvironmentDetector {
                     PythonEnvironmentType.PIPENV
                 }
 
-                PythonSdkUtil.isVirtualEnv(pythonExecutablePath).also { LOG.info("isVirtualEnv: $it") } -> {
+                isVirtualEnv(venvRoot).also { LOG.info("isVirtualEnv: $it") } -> {
                     PythonEnvironmentType.VIRTUALENV
                 }
 
@@ -130,6 +128,8 @@ object EnvironmentDetector {
         LOG.info("Checking Pipenv directories (cached): ${dirs.map { it.pathString }}")
         return dirs.any { venvRoot.startsWith(it) }
     }
+
+    private fun isVirtualEnv(venvRoot: Path): Boolean = venvRoot.resolve("pyvenv.cfg").exists()
 
     private fun computePoetryDirs(): List<Path> {
         val dirs = mutableListOf<Path>()
