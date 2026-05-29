@@ -5,7 +5,9 @@ import java.nio.file.Path
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.mockkStatic
+import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
 import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
@@ -24,12 +26,12 @@ import com.intellij.openapi.vfs.pointers.VirtualFilePointerManager
 import com.intellij.python.community.impl.conda.icons.PythonCommunityImplCondaIcons
 import com.intellij.python.community.impl.pipenv.PIPENV_ICON
 import com.intellij.python.community.impl.poetry.common.icons.PythonCommunityImplPoetryCommonIcons
-import com.intellij.python.community.impl.uv.common.icons.PythonCommunityImplUVCommonIcons
 import com.intellij.python.hatch.icons.PythonHatchIcons
+import com.intellij.python.uv.common.icons.PythonUvCommonIcons
 import com.intellij.python.venv.icons.PythonVenvIcons
+import com.intellij.python.venv.sdk.flavors.VirtualEnvSdkFlavor
 
 import com.jetbrains.python.PythonPluginDisposable
-import com.jetbrains.python.sdk.flavors.VirtualEnvSdkFlavor
 
 class SdkFactoryTest {
     @BeforeEach
@@ -40,7 +42,7 @@ class SdkFactoryTest {
         every { app.getService(VirtualFilePointerManager::class.java) } returns mockk(relaxed = true)
         mockkStatic(PythonPluginDisposable::class)
         every { PythonPluginDisposable.getInstance() } returns mockk<Disposable>(relaxed = true)
-        mockkStatic(VirtualEnvSdkFlavor::class)
+        mockkObject(VirtualEnvSdkFlavor.Companion)
         every { VirtualEnvSdkFlavor.getInstance() } returns mockk(relaxed = true)
     }
 
@@ -48,13 +50,13 @@ class SdkFactoryTest {
     fun tearDown() {
         unmockkStatic(ApplicationManager::class)
         unmockkStatic(PythonPluginDisposable::class)
-        unmockkStatic(VirtualEnvSdkFlavor::class)
+        unmockkObject(VirtualEnvSdkFlavor.Companion)
     }
 
     @Test
     fun `getIconForEnvironmentType returns UV icon`() {
         assertEquals(
-            PythonCommunityImplUVCommonIcons.UV,
+            PythonUvCommonIcons.UV,
             SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.UV),
         )
     }

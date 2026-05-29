@@ -8,13 +8,10 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-
-import com.jetbrains.python.sdk.PythonSdkUtil
 
 class EnvironmentDetectorTest {
     @TempDir
@@ -32,13 +29,6 @@ class EnvironmentDetectorTest {
 
         binDir.createDirectories()
         Files.createFile(pythonExe)
-
-        mockkStatic(PythonSdkUtil::class)
-    }
-
-    @AfterEach
-    fun tearDown() {
-        unmockkStatic(PythonSdkUtil::class)
     }
 
     @Test
@@ -84,9 +74,8 @@ class EnvironmentDetectorTest {
     }
 
     @Test
-    fun `detects virtualenv as fallback`() {
+    fun `detects virtualenv from pyvenv cfg`() {
         venvRoot.resolve("pyvenv.cfg").writeText("home = /usr/bin")
-        every { PythonSdkUtil.isVirtualEnv(pythonExe.toString()) } returns true
 
         val result = EnvironmentDetector.detectEnvironmentType(pythonExe.toString())
 
@@ -102,8 +91,6 @@ class EnvironmentDetectorTest {
 
     @Test
     fun `returns SYSTEM when not a venv`() {
-        every { PythonSdkUtil.isVirtualEnv(pythonExe.toString()) } returns false
-
         val result = EnvironmentDetector.detectEnvironmentType(pythonExe.toString())
 
         assertEquals(PythonEnvironmentType.SYSTEM, result)
@@ -113,7 +100,6 @@ class EnvironmentDetectorTest {
     fun `UV takes precedence over virtualenv`() {
         val pyvenvCfg = venvRoot.resolve("pyvenv.cfg")
         pyvenvCfg.writeText("home = /usr/bin\nuv = 0.1.0")
-        every { PythonSdkUtil.isVirtualEnv(pythonExe.toString()) } returns true
 
         val result = EnvironmentDetector.detectEnvironmentType(pythonExe.toString())
 
@@ -124,7 +110,6 @@ class EnvironmentDetectorTest {
     fun `conda takes precedence over virtualenv`() {
         venvRoot.resolve("conda-meta").createDirectories()
         venvRoot.resolve("pyvenv.cfg").writeText("home = /usr/bin")
-        every { PythonSdkUtil.isVirtualEnv(pythonExe.toString()) } returns true
 
         val result = EnvironmentDetector.detectEnvironmentType(pythonExe.toString())
 
@@ -132,9 +117,8 @@ class EnvironmentDetectorTest {
     }
 
     @Test
-    fun `pyvenv cfg without uv marker is not UV`() {
+    fun `pyvenv cfg without uv marker is virtualenv`() {
         venvRoot.resolve("pyvenv.cfg").writeText("home = /usr/bin\nversion = 3.14")
-        every { PythonSdkUtil.isVirtualEnv(pythonExe.toString()) } returns true
 
         val result = EnvironmentDetector.detectEnvironmentType(pythonExe.toString())
 
@@ -142,18 +126,16 @@ class EnvironmentDetectorTest {
     }
 
     @Test
-    fun `missing pyvenv cfg is not UV`() {
-        every { PythonSdkUtil.isVirtualEnv(pythonExe.toString()) } returns true
-
+    fun `missing pyvenv cfg is SYSTEM`() {
         val result = EnvironmentDetector.detectEnvironmentType(pythonExe.toString())
 
-        assertEquals(PythonEnvironmentType.VIRTUALENV, result)
+        assertEquals(PythonEnvironmentType.SYSTEM, result)
     }
 
     @Test
-    fun `gitignore without Hatch marker is not Hatch`() {
+    fun `gitignore without Hatch marker falls back to virtualenv`() {
         venvRoot.resolve(".gitignore").writeText("*.pyc\n__pycache__/\n")
-        every { PythonSdkUtil.isVirtualEnv(pythonExe.toString()) } returns true
+        venvRoot.resolve("pyvenv.cfg").writeText("home = /usr/bin")
 
         val result = EnvironmentDetector.detectEnvironmentType(pythonExe.toString())
 
@@ -168,8 +150,6 @@ class EnvironmentDetectorTest {
         pipenvBin.createDirectories()
         val pipenvPython = pipenvBin.resolve("python")
         Files.createFile(pipenvPython)
-
-        every { PythonSdkUtil.isVirtualEnv(pipenvPython.toString()) } returns true
 
         mockkStatic(System::class)
         every { System.getenv("WORKON_HOME") } returns workonDir.toString()
