@@ -33,5 +33,6 @@ class PythonRequiredStartupActivity : ProjectActivity {
     private fun isPythonPluginAvailable(): Boolean =
         isEnabled(PluginId.getId("com.intellij.modules.python")) || isEnabled(PluginId.getId("PythonCore"))
 
-    private fun isEnabled(id: PluginId): Boolean = PluginManager.isPluginInstalled(id) && !PluginManagerCore.isDisabled(id)
+    private fun isEnabled(id: PluginId): Boolean =
+        PluginManager.isPluginInstalled(id) && !PluginManagerCore.isDisabled(id)
 }
