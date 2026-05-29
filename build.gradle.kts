@@ -69,7 +69,9 @@ dependencies {
     intellijPlatform {
         // platformVersion is a 2026.2 EAP build, available only as a snapshot maven artifact
         // (no installer at download.jetbrains.com), so resolve it from the repository.
-        pycharm(platformVersion) { useInstaller = false }
+        // Community (not Professional) carries every Python SDK API the plugin uses and has no
+        // EAP evaluation-login wall, which would otherwise block the headless UI tests.
+        pycharmCommunity(platformVersion) { useInstaller = false }
         bundledPlugin("PythonCore")
         pluginVerifier()
         zipSigner()
