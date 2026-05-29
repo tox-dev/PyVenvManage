@@ -67,7 +67,9 @@ dependencies {
     testImplementation(libs.remoteRobot)
     testImplementation(libs.remoteRobotFixtures)
     intellijPlatform {
-        pycharm(platformVersion)
+        // platformVersion is a 2026.2 EAP build, available only as a snapshot maven artifact
+        // (no installer at download.jetbrains.com), so resolve it from the repository.
+        pycharm(platformVersion) { useInstaller = false }
         bundledPlugin("PythonCore")
         pluginVerifier()
         zipSigner()
@@ -161,7 +163,7 @@ intellijPlatform {
                         IntelliJPlatformType.PyCharmProfessional,
                     )
                 }
-            ideTypes.forEach { create(it, platformVersion) }
+            ideTypes.forEach { create(it, platformVersion) { useInstaller = false } }
         }
     }
 }
