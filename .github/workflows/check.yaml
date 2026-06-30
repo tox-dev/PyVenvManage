@@ -76,7 +76,7 @@ jobs:
       - name: 🐘 Set up Gradle
         uses: gradle/actions/setup-gradle@3f131e8634966bd73d06cc69884922b02e6faf92 # v6
       - name: 💾 Cache verifier IDEs
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v5
         with:
           path: ~/.pluginVerifier/ides
           key: plugin-verifier-ides-${{ matrix.ide }}-${{ hashFiles('gradle.properties') }}
