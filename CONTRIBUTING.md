@@ -15,8 +15,7 @@ end-to-end UI tests that interact with a running IDE.
 
 ### Unit Tests
 
-Unit tests cover business logic, action update logic, and error paths. They run quickly and don't require a running
-IDE:
+Unit tests cover business logic, action update logic, and error paths. They run quickly and don't require a running IDE:
 
 ```bash
 ./gradlew test
@@ -24,15 +23,15 @@ IDE:
 
 ### UI Tests
 
-UI tests validate full user workflows by interacting with a running PyCharm instance via RemoteRobot. Start the IDE
-with robot-server in one terminal:
+UI tests validate full user workflows by interacting with a running PyCharm instance via RemoteRobot. Start the IDE with
+robot-server in one terminal:
 
 ```bash
 ./gradlew runIdeForUiTests
 ```
 
-Wait for the IDE to fully start and the robot-server to be ready at http://localhost:8082, then run the tests in
-another terminal:
+Wait for the IDE to fully start and the robot-server to be ready at http://localhost:8082, then run the tests in another
+terminal:
 
 ```bash
 ./gradlew uiTest
@@ -63,8 +62,8 @@ Check code style with `./gradlew ktlintCheck` or auto-fix issues with `./gradlew
 ## Continuous Integration
 
 The CI pipeline in `.github/workflows/check.yaml` builds the plugin, runs linting, executes unit tests with coverage
-verification followed by UI tests, verifies the plugin against PyCharm Community and PyCharm Professional, and creates
-a release draft on the main branch.
+verification followed by UI tests, verifies the plugin against PyCharm Community and PyCharm Professional, and creates a
+release draft on the main branch.
 
 The test job runs unit tests with `koverVerify`, then starts Xvfb and the IDE with robot-server, and finally runs UI
 tests for end-to-end validation.
@@ -75,8 +74,8 @@ Before committing, run `./gradlew ktlintFormat` to fix style issues, then `./gra
 pass with full coverage. If you modified action classes, run UI tests for end-to-end validation by starting
 `./gradlew runIdeForUiTests` in one terminal and `./gradlew uiTest` in another.
 
-Follow conventional commit style: use `feat:` for new features, `fix:` for bug fixes, `refactor:` for code
-refactoring, `test:` for test changes, `docs:` for documentation, and `chore:` for maintenance tasks.
+Follow conventional commit style: use `feat:` for new features, `fix:` for bug fixes, `refactor:` for code refactoring,
+`test:` for test changes, `docs:` for documentation, and `chore:` for maintenance tasks.
 
 ## Troubleshooting
 
@@ -90,15 +89,14 @@ code requires IntelliJ platform services that can't be mocked, add UI test cover
 
 ## Releasing
 
-The plugin version is defined in `gradle.properties` as `pluginVersion`. To release, update the version in that file
-and merge your PR to main. The CI automatically creates a draft release on GitHub with the version from
-`gradle.properties`.
+The plugin version is defined in `gradle.properties` as `pluginVersion`. To release, update the version in that file and
+merge your PR to main. The CI automatically creates a draft release on GitHub with the version from `gradle.properties`.
 
 Review the draft release on the [Releases page](https://github.com/pyvenvmanage/PyVenvManage/releases) and edit the
 release notes if needed. Click "Publish release" (not pre-release) to trigger the release workflow, which builds and
 signs the plugin, publishes to [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2),
-uploads the plugin ZIP to the GitHub release, and creates a PR to update CHANGELOG.md. Merge that changelog PR after
-the release workflow completes.
+uploads the plugin ZIP to the GitHub release, and creates a PR to update CHANGELOG.md. Merge that changelog PR after the
+release workflow completes.
 
 The release workflow requires repository secrets configured by maintainers: `PUBLISH_TOKEN` for JetBrains Marketplace
 upload, and `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, and `PRIVATE_KEY_PASSWORD` for plugin signing.
