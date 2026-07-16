@@ -9,7 +9,6 @@ body:
       description: A clear and concise description of what the need or problem is.
     validations:
       required: true
-
   - type: textarea
     id: solution
     attributes:
@@ -17,13 +16,11 @@ body:
       description: A clear and concise description of what you want to happen.
     validations:
       required: true
-
   - type: textarea
     id: alternatives
     attributes:
       label: Alternatives you've considered
       description: What did you try so far to accomplish the goal?
-
   - type: textarea
     id: context
     attributes:

@@ -9,7 +9,6 @@ body:
       placeholder: PyCharm 2024.2
     validations:
       required: true
-
   - type: dropdown
     id: os
     attributes:
@@ -18,7 +17,6 @@ body:
         - macOS
         - Linux
         - Windows
-
   - type: input
     id: version
     attributes:
@@ -26,7 +24,6 @@ body:
       placeholder: 2.0.0
     validations:
       required: true
-
   - type: textarea
     id: issue
     attributes:
@@ -34,7 +31,6 @@ body:
       description: A clear and concise description of what the bug is.
     validations:
       required: true
-
   - type: textarea
     id: logs
     attributes:
