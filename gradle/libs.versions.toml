@@ -2,7 +2,7 @@
 changelog = "2.5.0"
 intelliJPlatform = "2.18.0"
 junitPlatformLauncher= "6.1.1"
-jupiter = "6.1.1"
+jupiter = "6.1.2"
 kotlin = "2.4.0"
 mockk = "1.14.11"
 kover = "0.9.8"
