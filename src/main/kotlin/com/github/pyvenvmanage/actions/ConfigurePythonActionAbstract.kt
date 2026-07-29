@@ -29,7 +29,8 @@ abstract class ConfigurePythonActionAbstract : AnAction() {
         val venvDir = e.getData(CommonDataKeys.VIRTUAL_FILE)?.takeIf { it.isDirectory }
         val pythonExecutable = venvDir?.let { PythonSdkUtil.getPythonExecutable(it.path) }
         if (pythonExecutable != null) {
-            e.presentation.icon = SdkFactory.getIconForEnvironmentType(EnvironmentDetector.detectEnvironmentType(pythonExecutable))
+            val envType = EnvironmentDetector.detectEnvironmentType(pythonExecutable)
+            e.presentation.icon = SdkFactory.getIconForEnvironmentType(envType)
         }
         e.presentation.isEnabledAndVisible = pythonExecutable != null
     }

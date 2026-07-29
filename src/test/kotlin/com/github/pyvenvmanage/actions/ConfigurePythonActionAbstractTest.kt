@@ -115,6 +115,17 @@ class ConfigurePythonActionAbstractTest {
         }
 
         @Test
+        fun `disables action for non-directory selection`() {
+            every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
+            every { virtualFile.isDirectory } returns false
+
+            action.update(event)
+
+            verify { presentation.isEnabledAndVisible = false }
+            verify(exactly = 0) { PythonSdkUtil.getPythonExecutable(any()) }
+        }
+
+        @Test
         fun `sets icon based on detected environment type`() {
             every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
             every { virtualFile.isDirectory } returns true
@@ -133,7 +144,6 @@ class ConfigurePythonActionAbstractTest {
 
     @Nested
     inner class ActionPerformedTest {
-        private lateinit var parentDir: VirtualFile
         private lateinit var interpreterList: PyConfigurableInterpreterList
         private lateinit var notificationGroupManager: NotificationGroupManager
         private lateinit var notificationGroup: NotificationGroup
@@ -142,7 +152,6 @@ class ConfigurePythonActionAbstractTest {
 
         @BeforeEach
         fun setUpMocks() {
-            parentDir = mockk(relaxed = true)
             interpreterList = mockk(relaxed = true)
             notificationGroupManager = mockk(relaxed = true)
             notificationGroup = mockk(relaxed = true)
@@ -191,16 +200,13 @@ class ConfigurePythonActionAbstractTest {
         }
 
         @Test
-        fun `uses parent directory when file is not a directory`() {
+        fun `ignores non-directory selection`() {
             every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
             every { virtualFile.isDirectory } returns false
-            every { virtualFile.parent } returns parentDir
-            every { parentDir.path } returns "/some/venv"
-            every { PythonSdkUtil.getPythonExecutable("/some/venv") } returns null
 
             action.actionPerformed(event)
 
-            verify { PythonSdkUtil.getPythonExecutable("/some/venv") }
+            verify(exactly = 0) { PythonSdkUtil.getPythonExecutable(any()) }
         }
 
         @Test
