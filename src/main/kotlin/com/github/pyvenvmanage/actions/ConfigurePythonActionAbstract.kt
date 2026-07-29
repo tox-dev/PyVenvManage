@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
@@ -21,39 +20,23 @@ import com.github.pyvenvmanage.sdk.PythonEnvironmentType
 import com.github.pyvenvmanage.sdk.SdkFactory
 
 abstract class ConfigurePythonActionAbstract : AnAction() {
-    companion object {
-        private val LOG = Logger.getInstance(ConfigurePythonActionAbstract::class.java)
-    }
-
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
-        val selectedPath = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        LOG.info("Update called for path: $selectedPath")
-        val isValid =
-            selectedPath?.let { path ->
-                val dir = if (path.isDirectory) path else path.parent
-                LOG.info("Checking directory: ${dir.path}")
-                PythonSdkUtil.getPythonExecutable(dir.path)?.let { pythonExe ->
-                    LOG.info("Found python executable: $pythonExe")
-                    val envType = EnvironmentDetector.detectEnvironmentType(pythonExe)
-                    val icon = SdkFactory.getIconForEnvironmentType(envType)
-                    LOG.info("Setting icon for type $envType: $icon")
-                    e.presentation.icon = icon
-                    true
-                } ?: false.also { LOG.info("No python executable found") }
-            } ?: false.also { LOG.info("No selected path") }
-
-        e.presentation.isEnabledAndVisible = isValid
-        LOG.info("Action visible: $isValid")
+        // Only offer the action on a directory that is itself a virtual environment. Resolving a file
+        // to its parent made it appear on ordinary files (e.g. main.py) whose folder merely contains
+        // a venv, which is not a valid interpreter target.
+        val venvDir = e.getData(CommonDataKeys.VIRTUAL_FILE)?.takeIf { it.isDirectory }
+        val pythonExecutable = venvDir?.let { PythonSdkUtil.getPythonExecutable(it.path) }
+        if (pythonExecutable != null) {
+            e.presentation.icon = SdkFactory.getIconForEnvironmentType(EnvironmentDetector.detectEnvironmentType(pythonExecutable))
+        }
+        e.presentation.isEnabledAndVisible = pythonExecutable != null
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val selectedPath =
-            e.getData(CommonDataKeys.VIRTUAL_FILE)?.let {
-                if (it.isDirectory) it else it.parent
-            } ?: return
+        val selectedPath = e.getData(CommonDataKeys.VIRTUAL_FILE)?.takeIf { it.isDirectory } ?: return
 
         val pythonExecutable = PythonSdkUtil.getPythonExecutable(selectedPath.path)
         if (pythonExecutable == null) {
