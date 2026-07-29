@@ -35,6 +35,7 @@ import com.intellij.python.venv.icons.PythonVenvIcons
 import com.jetbrains.python.configuration.PyConfigurableInterpreterList
 import com.jetbrains.python.sdk.PythonSdkUtil
 
+import com.github.pyvenvmanage.VenvUtils
 import com.github.pyvenvmanage.sdk.EnvironmentDetector
 import com.github.pyvenvmanage.sdk.PythonEnvironmentType
 import com.github.pyvenvmanage.sdk.SdkFactory
@@ -68,6 +69,7 @@ class ConfigurePythonActionAbstractTest {
         @BeforeEach
         fun setUpMocks() {
             mockkStatic(PythonSdkUtil::class)
+            mockkObject(VenvUtils)
             mockkObject(EnvironmentDetector)
             mockkObject(SdkFactory)
         }
@@ -87,10 +89,10 @@ class ConfigurePythonActionAbstractTest {
         }
 
         @Test
-        fun `enables action for directory with Python executable`() {
+        fun `enables action for virtualenv directory`() {
             every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
-            every { virtualFile.isDirectory } returns true
             every { virtualFile.path } returns "/some/venv"
+            every { VenvUtils.getPyVenvCfg(virtualFile) } returns Path.of("/some/venv/pyvenv.cfg")
             every { PythonSdkUtil.getPythonExecutable("/some/venv") } returns "/some/venv/bin/python"
             every { EnvironmentDetector.detectEnvironmentType("/some/venv/bin/python") } returns
                 PythonEnvironmentType.UV
@@ -103,11 +105,9 @@ class ConfigurePythonActionAbstractTest {
         }
 
         @Test
-        fun `disables action for directory without Python executable`() {
+        fun `disables action for non-venv directory`() {
             every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
-            every { virtualFile.isDirectory } returns true
-            every { virtualFile.path } returns "/some/dir"
-            every { PythonSdkUtil.getPythonExecutable("/some/dir") } returns null
+            every { VenvUtils.getPyVenvCfg(virtualFile) } returns null
 
             action.update(event)
 
@@ -117,7 +117,7 @@ class ConfigurePythonActionAbstractTest {
         @Test
         fun `disables action for non-directory selection`() {
             every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
-            every { virtualFile.isDirectory } returns false
+            every { VenvUtils.getPyVenvCfg(virtualFile) } returns null
 
             action.update(event)
 
@@ -128,8 +128,8 @@ class ConfigurePythonActionAbstractTest {
         @Test
         fun `sets icon based on detected environment type`() {
             every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
-            every { virtualFile.isDirectory } returns true
             every { virtualFile.path } returns "/some/venv"
+            every { VenvUtils.getPyVenvCfg(virtualFile) } returns Path.of("/some/venv/pyvenv.cfg")
             every { PythonSdkUtil.getPythonExecutable("/some/venv") } returns "/some/venv/bin/python"
             every { EnvironmentDetector.detectEnvironmentType("/some/venv/bin/python") } returns
                 PythonEnvironmentType.UV

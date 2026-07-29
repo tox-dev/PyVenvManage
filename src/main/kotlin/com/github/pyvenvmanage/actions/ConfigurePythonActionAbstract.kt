@@ -15,6 +15,7 @@ import com.jetbrains.python.sdk.PythonSdkUtil
 import com.jetbrains.python.statistics.executionType
 import com.jetbrains.python.statistics.interpreterType
 
+import com.github.pyvenvmanage.VenvUtils
 import com.github.pyvenvmanage.sdk.EnvironmentDetector
 import com.github.pyvenvmanage.sdk.PythonEnvironmentType
 import com.github.pyvenvmanage.sdk.SdkFactory
@@ -23,16 +24,16 @@ abstract class ConfigurePythonActionAbstract : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
-        // Only offer the action on a directory that is itself a virtual environment. Resolving a file
-        // to its parent made it appear on ordinary files (e.g. main.py) whose folder merely contains
-        // a venv, which is not a valid interpreter target.
-        val venvDir = e.getData(CommonDataKeys.VIRTUAL_FILE)?.takeIf { it.isDirectory }
-        val pythonExecutable = venvDir?.let { PythonSdkUtil.getPythonExecutable(it.path) }
-        if (pythonExecutable != null) {
+        // Offer the action only on directories that are actual virtual environments, using the same
+        // pyvenv.cfg check as VenvProjectViewNodeDecorator. getPythonExecutable alone also matches
+        // non-venv directories (e.g. a project root with a configured interpreter), which surfaced the
+        // action on ordinary files via their parent directory.
+        val venvDir = e.getData(CommonDataKeys.VIRTUAL_FILE)?.takeIf { VenvUtils.getPyVenvCfg(it) != null }
+        venvDir?.let { PythonSdkUtil.getPythonExecutable(it.path) }?.let { pythonExecutable ->
             val envType = EnvironmentDetector.detectEnvironmentType(pythonExecutable)
             e.presentation.icon = SdkFactory.getIconForEnvironmentType(envType)
         }
-        e.presentation.isEnabledAndVisible = pythonExecutable != null
+        e.presentation.isEnabledAndVisible = venvDir != null
     }
 
     override fun actionPerformed(e: AnActionEvent) {
