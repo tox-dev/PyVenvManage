@@ -56,6 +56,22 @@ class IdeaFrame(
         )
     }
 
+    fun clearProjectSdk() {
+        runJs(
+            """
+            const frameHelper = com.intellij.openapi.wm.impl.ProjectFrameHelper.getFrameHelper(component)
+            const project = frameHelper.getProject()
+            com.intellij.openapi.application.WriteAction.run(new com.intellij.util.ThrowableRunnable({
+                run: function() {
+                    com.intellij.openapi.roots.ProjectRootManager.getInstance(project).setProjectSdk(null)
+                }
+            }))
+            project.scheduleSave()
+        """,
+            true,
+        )
+    }
+
     fun openProjectViaAction(projectPath: String) {
         val escapedPath = projectPath.replace("\\", "\\\\").replace("'", "\\'")
         runJs(
