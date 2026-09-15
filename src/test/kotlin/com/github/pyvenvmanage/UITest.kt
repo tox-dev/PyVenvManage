@@ -47,6 +47,7 @@ class UITest {
 
     companion object {
         private lateinit var tmpDir: Path
+        private lateinit var demo: Path
         private lateinit var remoteRobot: RemoteRobot
 
         @BeforeAll
@@ -58,7 +59,7 @@ class UITest {
                 it.toFile().deleteRecursively()
             }
             tmpDir = Files.createTempDirectory(base, "ui-test")
-            val demo = Paths.get(tmpDir.toString(), "demo")
+            demo = Paths.get(tmpDir.toString(), "demo")
             Files.createDirectory(demo)
             File(demo.toString(), "main.py").printWriter().use { out ->
                 out.println("print(1)\n")
@@ -91,27 +92,32 @@ class UITest {
 
     @Test
     fun testSetProjectInterpreter() {
-        remoteRobot.pressEscape()
-        remoteRobot.idea {
-            with(projectViewTree) {
-                findText("ve").click(MouseButton.RIGHT_BUTTON)
-                remoteRobot.actionMenuItem("Set as Project Interpreter").click()
-                waitFor(ofMinutes(1)) { isDumbMode().not() }
-            }
-        }
+        assertActionWritesProjectSdk("Set as Project Interpreter")
     }
 
     @Test
     fun testSetModuleInterpreter() {
+        assertActionWritesProjectSdk("Set as Module Interpreter")
+    }
+
+    private fun assertActionWritesProjectSdk(actionText: String) {
         remoteRobot.pressEscape()
         remoteRobot.idea {
+            clearProjectSdk()
+            waitFor(ofMinutes(1)) { !miscXmlHasProjectSdk() }
             with(projectViewTree) {
                 findText("ve").click(MouseButton.RIGHT_BUTTON)
-                remoteRobot.actionMenuItem("Set as Module Interpreter").click()
+                remoteRobot.actionMenuItem(actionText).click()
                 waitFor(ofMinutes(1)) { isDumbMode().not() }
             }
+            waitFor(ofMinutes(1)) { miscXmlHasProjectSdk() }
         }
     }
+
+    private fun miscXmlHasProjectSdk(): Boolean =
+        demo.resolve(".idea").resolve("misc.xml").toFile().let {
+            it.exists() && it.readText().contains("project-jdk-name=")
+        }
 
     @Test
     fun testVenvDirectoryShowsPythonVersion() {

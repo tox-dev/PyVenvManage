@@ -61,8 +61,15 @@ abstract class ConfigurePythonActionAbstract : AnAction() {
             }
 
         when (val result = setSdk(project, selectedPath, sdk)) {
-            is SetSdkResult.Success -> notifySuccess(project, result.target, sdk, envType)
-            is SetSdkResult.Error -> notifyError(project, result.message)
+            is SetSdkResult.Success -> {
+                // Write .idea/misc.xml now rather than at the next autosave, so disk and VCS see the change.
+                project.scheduleSave()
+                notifySuccess(project, result.target, sdk, envType)
+            }
+
+            is SetSdkResult.Error -> {
+                notifyError(project, result.message)
+            }
         }
     }
 

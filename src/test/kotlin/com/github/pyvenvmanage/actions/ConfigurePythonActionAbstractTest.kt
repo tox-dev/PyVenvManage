@@ -352,6 +352,46 @@ class ConfigurePythonActionAbstractTest {
             assert(messageSlot.captured.contains("Python 3.11 (venv)"))
             assert(messageSlot.captured.contains("(virtualenv)"))
         }
+
+        @Test
+        fun `saves project on setSdk success`() {
+            val existingSdk: Sdk = mockk(relaxed = true)
+
+            action.lastSetSdkResult = ConfigurePythonActionAbstract.SetSdkResult.Success("module")
+
+            every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
+            every { virtualFile.isDirectory } returns true
+            every { virtualFile.path } returns "/some/venv"
+            every { PythonSdkUtil.getPythonExecutable("/some/venv") } returns "/some/venv/bin/python"
+            every { EnvironmentDetector.detectEnvironmentType("/some/venv/bin/python") } returns
+                PythonEnvironmentType.VIRTUALENV
+            every { jdkTable.allJdks } returns arrayOf(existingSdk)
+            every { existingSdk.homePath } returns "/some/venv/bin/python"
+
+            action.actionPerformed(event)
+
+            verify { project.scheduleSave() }
+        }
+
+        @Test
+        fun `does not save project on setSdk error`() {
+            val existingSdk: Sdk = mockk(relaxed = true)
+
+            action.lastSetSdkResult = ConfigurePythonActionAbstract.SetSdkResult.Error("Module not found")
+
+            every { event.getData(CommonDataKeys.VIRTUAL_FILE) } returns virtualFile
+            every { virtualFile.isDirectory } returns true
+            every { virtualFile.path } returns "/some/venv"
+            every { PythonSdkUtil.getPythonExecutable("/some/venv") } returns "/some/venv/bin/python"
+            every { EnvironmentDetector.detectEnvironmentType("/some/venv/bin/python") } returns
+                PythonEnvironmentType.VIRTUALENV
+            every { jdkTable.allJdks } returns arrayOf(existingSdk)
+            every { existingSdk.homePath } returns "/some/venv/bin/python"
+
+            action.actionPerformed(event)
+
+            verify(exactly = 0) { project.scheduleSave() }
+        }
     }
 
     class TestableConfigurePythonAction : ConfigurePythonActionAbstract() {
