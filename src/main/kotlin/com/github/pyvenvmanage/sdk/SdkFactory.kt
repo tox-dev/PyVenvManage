@@ -66,12 +66,11 @@ object SdkFactory {
     ): PythonSdkAdditionalData =
         when (envType) {
             PythonEnvironmentType.HATCH -> {
-                val hatchWorkingDir = findHatchWorkingDir(projectBasePath)
-                HatchSdkAdditionalData(hatchWorkingDir, null)
+                HatchSdkAdditionalData(findHatchWorkingDir(projectBasePath) ?: projectBasePath, null)
             }
 
             PythonEnvironmentType.UV -> {
-                val uvWorkingDir = findUvWorkingDir(projectBasePath)
+                val uvWorkingDir = findUvWorkingDir(projectBasePath) ?: projectBasePath
                 val venvPath = Path.of(pythonExecutable).parent?.parent
                 UvSdkAdditionalData(uvWorkingDir, null, venvPath?.toString(), null)
             }
