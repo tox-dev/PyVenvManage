@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [2.4.3] - 2026-09-15
+
+- Bump version to `2.4.3-dev` by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/222
+- 🔧 chore: batch dependency updates weekly on Tuesday by @gaborbernat in
+  https://github.com/tox-dev/PyVenvManage/pull/235
+- 🐛 fix(build): build against the PyCharm 2026.2.2 release by @gaborbernat in
+  https://github.com/tox-dev/PyVenvManage/pull/243
+- 🐛 fix(actions): set project SDK so scratch files resolve by @gaborbernat in
+  https://github.com/tox-dev/PyVenvManage/pull/244
+- 🐛 fix(ci): pass release notes to patchChangelog by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/245
+
 ## [2.4.2] - 2026-07-29
 
 ${GITHUB_EVENT_RELEASE_BODY}
@@ -167,4 +178,5 @@ ${GITHUB_EVENT_RELEASE_BODY}
 [2.3.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.7...v2.3.0
 [2.4.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.3.0...v2.4.1
 [2.4.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.1...v2.4.2
-[unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.2...HEAD
+[2.4.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.2...v2.4.3
+[unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.3...HEAD
