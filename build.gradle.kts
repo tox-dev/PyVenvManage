@@ -53,8 +53,6 @@ repositories {
     mavenCentral()
     intellijPlatform {
         defaultRepositories()
-        // platformVersion targets a 2026.2 EAP build, which lives in the snapshots channel.
-        snapshots()
     }
 }
 
@@ -67,10 +65,9 @@ dependencies {
     testImplementation(libs.remoteRobot)
     testImplementation(libs.remoteRobotFixtures)
     intellijPlatform {
-        // platformVersion is a 2026.2 EAP build, available only as a snapshot maven artifact
-        // (no installer at download.jetbrains.com), so resolve it from the repository.
-        // Community (not Professional) carries every Python SDK API the plugin uses and has no
-        // EAP evaluation-login wall, which would otherwise block the headless UI tests.
+        // PyCharm Community has no standalone installer since the 2026 unified distribution, so
+        // resolve it from the maven repository. Community (not Professional) carries every Python
+        // SDK API the plugin uses and has no license wall, which would block the headless UI tests.
         pycharmCommunity(platformVersion) { useInstaller = false }
         bundledPlugin("PythonCore")
         pluginVerifier()
