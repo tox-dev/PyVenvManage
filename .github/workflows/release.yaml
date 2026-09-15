@@ -40,11 +40,7 @@ jobs:
           GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
       - name: 📝 Update changelog
         if: ${{ github.event.release.body != '' }}
-        run: |
-          cat > /tmp/release-notes.txt << 'RELEASE_NOTES_EOF'
-          ${GITHUB_EVENT_RELEASE_BODY}
-          RELEASE_NOTES_EOF
-          ./gradlew patchChangelog --release-note="$(cat /tmp/release-notes.txt)"
+        run: ./gradlew patchChangelog --release-note="$GITHUB_EVENT_RELEASE_BODY"
         env:
           GITHUB_EVENT_RELEASE_BODY: ${{ github.event.release.body }}
       - name: 📤 Publish to JetBrains Marketplace
@@ -91,11 +87,7 @@ jobs:
           GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
       - name: 📝 Update changelog
         if: ${{ github.event.release.body != '' }}
-        run: |
-          cat > /tmp/release-notes.txt << 'RELEASE_NOTES_EOF'
-          ${GITHUB_EVENT_RELEASE_BODY}
-          RELEASE_NOTES_EOF
-          ./gradlew patchChangelog --release-note="$(cat /tmp/release-notes.txt)"
+        run: ./gradlew patchChangelog --release-note="$GITHUB_EVENT_RELEASE_BODY"
         env:
           GITHUB_EVENT_RELEASE_BODY: ${{ github.event.release.body }}
       - name: 🔢 Calculate next dev version
