@@ -44,13 +44,17 @@ jobs:
           name: ${{ steps.artifact.outputs.filename }}
           path: ./build/distributions/content/*/*
   verify:
-    name: 🔍 Verify (${{ matrix.version || 'release' }})
+    name: 🔍 Verify (${{ matrix.label }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         # The EAP entry catches platform APIs that the next release moves or removes.
-        version: ["", "263-EAP-SNAPSHOT"]
+        include:
+          - label: PY
+            version: ""
+          - label: PY 263 EAP
+            version: 263-EAP-SNAPSHOT
     steps:
       - name: 🧹 Free disk space
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
@@ -85,7 +89,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: pluginVerifier-result-${{ matrix.version || 'release' }}
+          name: pluginVerifier-result-${{ matrix.label }}
           path: ${{ github.workspace }}/build/reports/pluginVerifier
   lint:
     name: 🧹 Lint
