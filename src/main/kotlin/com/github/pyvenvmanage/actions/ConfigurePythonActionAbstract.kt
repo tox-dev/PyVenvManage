@@ -12,8 +12,6 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.vfs.VirtualFile
 
 import com.jetbrains.python.sdk.PythonSdkUtil
-import com.jetbrains.python.statistics.executionType
-import com.jetbrains.python.statistics.interpreterType
 
 import com.github.pyvenvmanage.VenvUtils
 import com.github.pyvenvmanage.sdk.EnvironmentDetector
@@ -84,10 +82,7 @@ abstract class ConfigurePythonActionAbstract : AnAction() {
             .getNotificationGroup("Python SDK change")
             .createNotification(
                 "Python SDK Updated",
-                "Updated SDK for $target to:\n${sdk.name} " +
-                    "(${envType.name.lowercase()}) " +
-                    "of type ${sdk.interpreterType.toString().lowercase()} " +
-                    sdk.executionType.toString().lowercase(),
+                "Updated SDK for $target to:\n${sdk.name} (${envType.name.lowercase()})",
                 NotificationType.INFORMATION,
             ).setIcon(SdkFactory.getIconForEnvironmentType(envType))
             .notify(project)

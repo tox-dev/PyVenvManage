@@ -7,8 +7,9 @@ import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
+import com.intellij.openapi.util.IconLoader
 import com.intellij.python.community.impl.conda.icons.PythonCommunityImplCondaIcons
-import com.intellij.python.community.impl.pipenv.PIPENV_ICON
+import com.intellij.python.community.impl.pipenv.icons.PythonCommunityImplPipenvIcons
 import com.intellij.python.community.impl.poetry.common.icons.PythonCommunityImplPoetryCommonIcons
 import com.intellij.python.hatch.icons.PythonHatchIcons
 import com.intellij.python.uv.common.icons.PythonUvCommonIcons
@@ -25,6 +26,17 @@ import com.jetbrains.python.sdk.poetry.PyPoetrySdkFlavor
 import com.jetbrains.python.sdk.uv.UvSdkAdditionalData
 
 object SdkFactory {
+    // 2026.2 exposes the pipenv icon as PIPENV_ICON (pythonClosed.svg), 2026.3 as
+    // PythonCommunityImplPipenvIcons.Pipenv (pipenv.svg). Resolving the resource keeps both working.
+    private val PIPENV_ICON: Icon =
+        sequenceOf("pipenv", "pythonClosed")
+            .mapNotNull {
+                IconLoader.findIcon(
+                    "icons/com/intellij/python/community/impl/pipenv/expui/$it.svg",
+                    PythonCommunityImplPipenvIcons::class.java.classLoader,
+                )
+            }.firstOrNull() ?: PythonVenvIcons.VirtualEnv
+
     fun createSdk(
         pythonExecutable: String,
         envType: PythonEnvironmentType,
@@ -76,15 +88,11 @@ object SdkFactory {
             }
 
             PythonEnvironmentType.POETRY -> {
-                PythonSdkAdditionalData(
-                    PyFlavorAndData(PyFlavorData.Empty, PyPoetrySdkFlavor),
-                )
+                PythonSdkAdditionalData(PyFlavorAndData(PyFlavorData.Empty, PyPoetrySdkFlavor), projectBasePath)
             }
 
             PythonEnvironmentType.PIPENV -> {
-                PythonSdkAdditionalData(
-                    PyFlavorAndData(PyFlavorData.Empty, PyPipEnvSdkFlavor),
-                )
+                PythonSdkAdditionalData(PyFlavorAndData(PyFlavorData.Empty, PyPipEnvSdkFlavor), projectBasePath)
             }
 
             PythonEnvironmentType.CONDA,
@@ -93,6 +101,7 @@ object SdkFactory {
             -> {
                 PythonSdkAdditionalData(
                     PyFlavorAndData(PyFlavorData.Empty, VirtualEnvSdkFlavor.getInstance()),
+                    projectBasePath,
                 )
             }
         }

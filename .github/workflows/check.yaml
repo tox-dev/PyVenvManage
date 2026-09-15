@@ -44,12 +44,13 @@ jobs:
           name: ${{ steps.artifact.outputs.filename }}
           path: ./build/distributions/content/*/*
   verify:
-    name: 🔍 Verify (${{ matrix.ide }})
+    name: 🔍 Verify (${{ matrix.version || 'release' }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        ide: ${{ github.event_name == 'pull_request' && fromJson('["PY"]') || fromJson('["PY"]') }}
+        # The EAP entry catches platform APIs that the next release moves or removes.
+        version: ["", "263-EAP-SNAPSHOT"]
     steps:
       - name: 🧹 Free disk space
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # main
@@ -72,19 +73,19 @@ jobs:
       - name: 🐘 Set up Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
       - name: 💾 Cache verifier IDEs
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.pluginVerifier/ides
-          key: plugin-verifier-ides-${{ matrix.ide }}-${{ hashFiles('gradle.properties') }}
+          key: plugin-verifier-ides-${{ matrix.version }}-${{ hashFiles('gradle.properties') }}
       - name: ✅ Run verification
-        run: ./gradlew verifyPlugin -PverifyIde=${MATRIX_IDE}
+        run: ./gradlew verifyPlugin -PverifyIde=PY ${MATRIX_VERSION:+-PverifyVersion=$MATRIX_VERSION}
         env:
-          MATRIX_IDE: ${{ matrix.ide }}
+          MATRIX_VERSION: ${{ matrix.version }}
       - name: 📤 Upload results
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: pluginVerifier-result-${{ matrix.ide }}
+          name: pluginVerifier-result-${{ matrix.version || 'release' }}
           path: ${{ github.workspace }}/build/reports/pluginVerifier
   lint:
     name: 🧹 Lint

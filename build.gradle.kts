@@ -53,6 +53,8 @@ repositories {
     mavenCentral()
     intellijPlatform {
         defaultRepositories()
+        // The verifier also runs against an EAP build of the next platform, which lives in the snapshots channel.
+        snapshots()
     }
 }
 
@@ -162,7 +164,8 @@ intellijPlatform {
                         IntelliJPlatformType.PyCharmProfessional,
                     )
                 }
-            ideTypes.forEach { create(it, platformVersion) { useInstaller = false } }
+            val verifyVersion = providers.gradleProperty("verifyVersion").getOrElse(platformVersion)
+            ideTypes.forEach { create(it, verifyVersion) { useInstaller = false } }
         }
     }
 }
