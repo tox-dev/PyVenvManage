@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [2.4.4] - 2026-09-15
+
+- Bump version to `2.4.4-dev` by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/246
+- 🐛 fix(sdk): keep the plugin loading on 2026.3 EAP by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/247
+
 ## [2.4.3] - 2026-09-15
 
 - Bump version to `2.4.3-dev` by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/222
@@ -179,4 +184,5 @@ ${GITHUB_EVENT_RELEASE_BODY}
 [2.4.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.3.0...v2.4.1
 [2.4.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.1...v2.4.2
 [2.4.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.2...v2.4.3
-[unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.3...HEAD
+[2.4.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.3...v2.4.4
+[unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.4...HEAD
