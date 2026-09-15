@@ -29,13 +29,13 @@ object SdkFactory {
     // 2026.2 exposes the pipenv icon as PIPENV_ICON (pythonClosed.svg), 2026.3 as
     // PythonCommunityImplPipenvIcons.Pipenv (pipenv.svg). Resolving the resource keeps both working.
     private val PIPENV_ICON: Icon =
-        sequenceOf("pipenv", "pythonClosed")
-            .mapNotNull {
-                IconLoader.findIcon(
-                    "icons/com/intellij/python/community/impl/pipenv/expui/$it.svg",
-                    PythonCommunityImplPipenvIcons::class.java.classLoader,
-                )
-            }.firstOrNull() ?: PythonVenvIcons.VirtualEnv
+        PythonCommunityImplPipenvIcons::class.java.classLoader.let { loader ->
+            // findIcon accepts a path it never resolves, so only offer it one the class loader has.
+            sequenceOf("pipenv", "pythonClosed")
+                .map { "icons/com/intellij/python/community/impl/pipenv/expui/$it.svg" }
+                .firstOrNull { loader.getResource(it) != null }
+                ?.let { IconLoader.findIcon(it, loader) }
+        } ?: PythonVenvIcons.VirtualEnv
 
     fun createSdk(
         pythonExecutable: String,

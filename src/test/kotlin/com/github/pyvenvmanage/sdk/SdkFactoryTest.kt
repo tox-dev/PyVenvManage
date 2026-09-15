@@ -13,8 +13,10 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.writeText
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -24,7 +26,6 @@ import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.pointers.VirtualFilePointerManager
 import com.intellij.python.community.impl.conda.icons.PythonCommunityImplCondaIcons
-import com.intellij.python.community.impl.pipenv.PIPENV_ICON
 import com.intellij.python.community.impl.poetry.common.icons.PythonCommunityImplPoetryCommonIcons
 import com.intellij.python.hatch.icons.PythonHatchIcons
 import com.intellij.python.uv.common.icons.PythonUvCommonIcons
@@ -84,7 +85,17 @@ class SdkFactoryTest {
 
     @Test
     fun `getIconForEnvironmentType returns Pipenv icon`() {
-        assertEquals(PIPENV_ICON, SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.PIPENV))
+        val icon = SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.PIPENV)
+
+        assertTrue(icon.toString().contains("impl/pipenv/expui/"), icon.toString())
+    }
+
+    @Test
+    fun `getIconForEnvironmentType does not fall back for Pipenv`() {
+        assertNotEquals(
+            PythonVenvIcons.VirtualEnv,
+            SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.PIPENV),
+        )
     }
 
     @Test
