@@ -8,11 +8,6 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
 import com.intellij.openapi.util.IconLoader
-import com.intellij.python.community.impl.conda.icons.PythonCommunityImplCondaIcons
-import com.intellij.python.community.impl.pipenv.icons.PythonCommunityImplPipenvIcons
-import com.intellij.python.community.impl.poetry.common.icons.PythonCommunityImplPoetryCommonIcons
-import com.intellij.python.hatch.icons.PythonHatchIcons
-import com.intellij.python.uv.common.icons.PythonUvCommonIcons
 import com.intellij.python.venv.icons.PythonVenvIcons
 import com.intellij.python.venv.sdk.flavors.VirtualEnvSdkFlavor
 
@@ -26,16 +21,27 @@ import com.jetbrains.python.sdk.poetry.PyPoetrySdkFlavor
 import com.jetbrains.python.sdk.uv.UvSdkAdditionalData
 
 object SdkFactory {
-    // 2026.2 exposes the pipenv icon as PIPENV_ICON (pythonClosed.svg), 2026.3 as
-    // PythonCommunityImplPipenvIcons.Pipenv (pipenv.svg). Resolving the resource keeps both working.
-    private val PIPENV_ICON: Icon =
-        PythonCommunityImplPipenvIcons::class.java.classLoader.let { loader ->
-            // findIcon accepts a path it never resolves, so only offer it one the class loader has.
-            sequenceOf("pipenv", "pythonClosed")
-                .map { "icons/com/intellij/python/community/impl/pipenv/expui/$it.svg" }
-                .firstOrNull { loader.getResource(it) != null }
-                ?.let { IconLoader.findIcon(it, loader) }
-        } ?: PythonVenvIcons.VirtualEnv
+    // The platform's per-flavor *Icons classes are impl-internal, but the SVG they wrap is resolvable
+    // by path through our own class loader (the python modules are a declared plugin dependency).
+    // Offering several names keeps this working across platform versions that rename the resource,
+    // the way 2026.3 renamed the pipenv icon from pythonClosed.svg to pipenv.svg.
+    private fun findIcon(vararg resourcePaths: String): Icon {
+        val loader = SdkFactory::class.java.classLoader
+        return resourcePaths
+            .firstOrNull { loader.getResource(it) != null }
+            ?.let { IconLoader.findIcon(it, loader) }
+            ?: PythonVenvIcons.VirtualEnv
+    }
+
+    private val CONDA_ICON = findIcon("icons/com/intellij/python/community/impl/conda/expui/anaconda.svg")
+    private val POETRY_ICON = findIcon("icons/intellij/python/community/impl/poetry/common/expui/poetry.svg")
+    private val HATCH_ICON = findIcon("icons/com/intellij/python/hatch/expui/logo.svg")
+    private val UV_ICON = findIcon("images/intellij/python/uv/common/expui/uv.svg")
+    private val PIPENV_ICON =
+        findIcon(
+            "icons/com/intellij/python/community/impl/pipenv/expui/pipenv.svg",
+            "icons/com/intellij/python/community/impl/pipenv/expui/pythonClosed.svg",
+        )
 
     fun createSdk(
         pythonExecutable: String,
@@ -134,10 +140,10 @@ object SdkFactory {
 
     fun getIconForEnvironmentType(envType: PythonEnvironmentType): Icon =
         when (envType) {
-            PythonEnvironmentType.CONDA -> PythonCommunityImplCondaIcons.Anaconda
-            PythonEnvironmentType.POETRY -> PythonCommunityImplPoetryCommonIcons.Poetry
-            PythonEnvironmentType.HATCH -> PythonHatchIcons.Logo
-            PythonEnvironmentType.UV -> PythonUvCommonIcons.UV
+            PythonEnvironmentType.CONDA -> CONDA_ICON
+            PythonEnvironmentType.POETRY -> POETRY_ICON
+            PythonEnvironmentType.HATCH -> HATCH_ICON
+            PythonEnvironmentType.UV -> UV_ICON
             PythonEnvironmentType.PIPENV -> PIPENV_ICON
             PythonEnvironmentType.VIRTUALENV -> PythonVenvIcons.VirtualEnv
             PythonEnvironmentType.SYSTEM -> PythonVenvIcons.VirtualEnv
