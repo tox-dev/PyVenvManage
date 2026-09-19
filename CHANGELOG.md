@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [2.4.5] - 2026-09-19
+
+PyVenv Manage 2 no longer touches internal platform API to resolve the Conda, Poetry, Hatch, uv, and Pipenv icons.
+
+### Fixed
+
+- Resolve the Conda, Poetry, Hatch, and uv icons by resource path, and stop referencing `PythonCommunityImplPipenvIcons`
+  just to grab a class loader ([#250](https://github.com/tox-dev/PyVenvManage/pull/250)). The python modules are a
+  declared plugin dependency, so our own class loader already sees their bundled resources.
+
+### Internal
+
+- The SDK flavor and additional-data classes (`VirtualEnvSdkFlavor`, `PyPoetrySdkFlavor`, `PyPipEnvSdkFlavor`,
+  `HatchSdkAdditionalData`, `UvSdkAdditionalData`) have no public equivalent, so they remain internal API usage. Tracked
+  upstream as [IJPL-256131](https://youtrack.jetbrains.com/issue/IJPL-256131).
+
 ## [2.4.4] - 2026-09-15
 
 - Bump version to `2.4.4-dev` by @gaborbernat in https://github.com/tox-dev/PyVenvManage/pull/246
@@ -185,4 +201,5 @@ ${GITHUB_EVENT_RELEASE_BODY}
 [2.4.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.1...v2.4.2
 [2.4.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.2...v2.4.3
 [2.4.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.3...v2.4.4
-[unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.4...HEAD
+[2.4.5]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.4...v2.4.5
+[unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.5...HEAD
