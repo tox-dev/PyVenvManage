@@ -191,6 +191,10 @@ intellijPlatform {
     }
 }
 
+ktlint {
+    version = "1.8.0"
+}
+
 changelog {
     groups.empty()
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
