@@ -7,6 +7,18 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
+buildscript {
+    // Build plugins pull these in transitively at versions with open Dependabot alerts; constraints raise the floor.
+    dependencies {
+        constraints {
+            classpath("org.freemarker:freemarker:2.3.35")
+            classpath("com.fasterxml.jackson.core:jackson-databind:2.21.5")
+            classpath("io.opentelemetry:opentelemetry-api:1.62.0")
+            classpath("org.jsoup:jsoup:1.23.1")
+        }
+    }
+}
+
 plugins {
     alias(libs.plugins.changelog)
     alias(libs.plugins.intelliJPlatform)
@@ -75,6 +87,15 @@ dependencies {
         pluginVerifier()
         zipSigner()
         testFramework(TestFrameworkType.JUnit5)
+    }
+}
+
+configurations.matching { it.name.startsWith("intellijPlatformTest") }.configureEach {
+    // The platform test framework pulls in OpenTelemetry 1.48.0, which has an open Dependabot alert.
+    resolutionStrategy.eachDependency {
+        if (requested.group == "io.opentelemetry" && requested.version?.startsWith("1.48.") == true) {
+            useVersion("1.62.0")
+        }
     }
 }
 
