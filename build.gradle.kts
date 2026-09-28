@@ -72,6 +72,7 @@ repositories {
 
 dependencies {
     testImplementation(libs.jupiter)
+    testImplementation(libs.jupiterParams)
     testImplementation(libs.mockk)
     testRuntimeOnly(libs.jupiterEngine)
     testRuntimeOnly(libs.junitPlatformLauncher)

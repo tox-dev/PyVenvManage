@@ -19,12 +19,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.pointers.VirtualFilePointerManager
-import com.intellij.python.venv.icons.PythonVenvIcons
 import com.intellij.python.venv.sdk.flavors.VirtualEnvSdkFlavor
 
 import com.jetbrains.python.PythonPluginDisposable
@@ -84,17 +85,12 @@ class SdkFactoryTest {
         assertTrue(icon.toString().contains("impl/pipenv/expui/"), icon.toString())
     }
 
-    @Test
-    fun `getIconForEnvironmentType returns VirtualEnv icon for VIRTUALENV`() {
-        assertEquals(
-            PythonVenvIcons.VirtualEnv,
-            SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.VIRTUALENV),
-        )
-    }
+    @ParameterizedTest
+    @EnumSource(PythonEnvironmentType::class, names = ["VIRTUALENV", "SYSTEM"])
+    fun `getIconForEnvironmentType returns VirtualEnv icon`(envType: PythonEnvironmentType) {
+        val icon = SdkFactory.getIconForEnvironmentType(envType)
 
-    @Test
-    fun `getIconForEnvironmentType returns VirtualEnv icon for SYSTEM`() {
-        assertEquals(PythonVenvIcons.VirtualEnv, SdkFactory.getIconForEnvironmentType(PythonEnvironmentType.SYSTEM))
+        assertTrue(icon.toString().contains("virtualEnv.svg"), icon.toString())
     }
 
     @Test

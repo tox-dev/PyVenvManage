@@ -3,12 +3,12 @@ package com.github.pyvenvmanage.sdk
 import java.nio.file.Path
 import javax.swing.Icon
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil
 import com.intellij.openapi.util.IconLoader
-import com.intellij.python.venv.icons.PythonVenvIcons
 import com.intellij.python.venv.sdk.flavors.VirtualEnvSdkFlavor
 
 import com.jetbrains.python.hatch.sdk.HatchSdkAdditionalData
@@ -30,9 +30,14 @@ object SdkFactory {
         return resourcePaths
             .firstOrNull { loader.getResource(it) != null }
             ?.let { IconLoader.findIcon(it, loader) }
-            ?: PythonVenvIcons.VirtualEnv
+            ?: AllIcons.Nodes.PpLib
     }
 
+    private val VIRTUALENV_ICON =
+        findIcon(
+            "images/intellij/python/venv/common/expui/virtualEnv.svg",
+            "icons/com/intellij/python/venv/expui/virtualEnv.svg",
+        )
     private val CONDA_ICON = findIcon("icons/com/intellij/python/community/impl/conda/expui/anaconda.svg")
     private val POETRY_ICON = findIcon("icons/intellij/python/community/impl/poetry/common/expui/poetry.svg")
     private val HATCH_ICON = findIcon("icons/com/intellij/python/hatch/expui/logo.svg")
@@ -145,7 +150,7 @@ object SdkFactory {
             PythonEnvironmentType.HATCH -> HATCH_ICON
             PythonEnvironmentType.UV -> UV_ICON
             PythonEnvironmentType.PIPENV -> PIPENV_ICON
-            PythonEnvironmentType.VIRTUALENV -> PythonVenvIcons.VirtualEnv
-            PythonEnvironmentType.SYSTEM -> PythonVenvIcons.VirtualEnv
+            PythonEnvironmentType.VIRTUALENV -> VIRTUALENV_ICON
+            PythonEnvironmentType.SYSTEM -> VIRTUALENV_ICON
         }
 }
