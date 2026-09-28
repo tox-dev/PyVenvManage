@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## [2.4.6] - 2026-09-28
+
+PyVenv Manage 2 keeps its virtualenv icons working on PyCharm 2026.3 and refreshes build dependencies.
+
+### Fixed
+
+- Load the virtualenv icon from the resource paths used by PyCharm 2026.2 and 2026.3, avoiding the removed `PythonVenvIcons` class ([#256](https://github.com/tox-dev/PyVenvManage/pull/256)).
+
+### Internal
+
+- Require patched Jackson 2.21.6 and 3.1.6 in the build and test classpaths, covering seven Dependabot alerts ([#257](https://github.com/tox-dev/PyVenvManage/pull/257)).
+- Raise vulnerable Freemarker, OpenTelemetry, and jsoup dependencies ([#254](https://github.com/tox-dev/PyVenvManage/pull/254)).
+- Build against PyCharm 2026.2.3 and refresh Gradle, plugin, and pre-commit dependencies ([#253](https://github.com/tox-dev/PyVenvManage/pull/253), [#255](https://github.com/tox-dev/PyVenvManage/pull/255), [#256](https://github.com/tox-dev/PyVenvManage/pull/256)).
+
 ## [2.4.5] - 2026-09-19
 
 PyVenv Manage 2 no longer touches internal platform API to resolve the Conda, Poetry, Hatch, uv, and Pipenv icons.
@@ -178,28 +192,30 @@ ${GITHUB_EVENT_RELEASE_BODY}
 
 - Removed the usage of the deprecated PythonSdkType.getPythonExecutable API
 
-[1.3.0]: https://github.com/pyvenvmanage/PyVenvManage/commits/v1.3.0
-[1.3.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.0...v1.3.1
-[1.3.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.1...v1.3.2
-[1.3.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.2...v1.3.3
-[1.3.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.3...v1.3.4
-[1.4.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.4...v1.4.0
-[2.0.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.4.0...v2.0.0
-[2.0.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.0...v2.0.1
-[2.1.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.1...v2.1.0
-[2.1.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.0...v2.1.2
-[2.2.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.2...v2.2.0
-[2.2.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.0...v2.2.1
-[2.2.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.1...v2.2.2
-[2.2.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.2...v2.2.3
-[2.2.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.3...v2.2.4
-[2.2.5]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.4...v2.2.5
-[2.2.6]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.5...v2.2.6
-[2.2.7]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.6...v2.2.7
-[2.3.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.7...v2.3.0
-[2.4.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.3.0...v2.4.1
-[2.4.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.1...v2.4.2
-[2.4.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.2...v2.4.3
-[2.4.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.3...v2.4.4
+[Unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.6...HEAD
+[2.4.6]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.5...v2.4.6
 [2.4.5]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.4...v2.4.5
+[2.4.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.3...v2.4.4
+[2.4.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.2...v2.4.3
+[2.4.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.1...v2.4.2
+[2.4.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.3.0...v2.4.1
+[2.3.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.7...v2.3.0
+[2.2.7]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.6...v2.2.7
+[2.2.6]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.5...v2.2.6
+[2.2.5]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.4...v2.2.5
+[2.2.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.3...v2.2.4
+[2.2.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.2...v2.2.3
+[2.2.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.1...v2.2.2
+[2.2.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.0...v2.2.1
+[2.2.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.2...v2.2.0
+[2.1.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.0...v2.1.2
+[2.1.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.1...v2.1.0
+[2.0.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.0...v2.0.1
+[2.0.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.4.0...v2.0.0
+[1.4.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.4...v1.4.0
+[1.3.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.3...v1.3.4
+[1.3.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.2...v1.3.3
+[1.3.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.1...v1.3.2
+[1.3.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.0...v1.3.1
+[1.3.0]: https://github.com/pyvenvmanage/PyVenvManage/commits/v1.3.0
 [unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.5...HEAD
