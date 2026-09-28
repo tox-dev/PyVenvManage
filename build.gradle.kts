@@ -12,7 +12,7 @@ buildscript {
     dependencies {
         constraints {
             classpath("org.freemarker:freemarker:2.3.35")
-            classpath("com.fasterxml.jackson.core:jackson-databind:2.21.5")
+            classpath("com.fasterxml.jackson.core:jackson-databind:2.21.6")
             classpath("io.opentelemetry:opentelemetry-api:1.62.0")
             classpath("org.jsoup:jsoup:1.23.1")
         }
@@ -96,6 +96,9 @@ configurations.matching { it.name.startsWith("intellijPlatformTest") }.configure
     resolutionStrategy.eachDependency {
         if (requested.group == "io.opentelemetry" && requested.version?.startsWith("1.48.") == true) {
             useVersion("1.62.0")
+        }
+        if (requested.group == "tools.jackson" && requested.name == "jackson-bom") {
+            useVersion("3.1.6")
         }
     }
 }
