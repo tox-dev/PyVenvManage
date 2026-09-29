@@ -12,9 +12,9 @@ buildscript {
     dependencies {
         constraints {
             classpath("org.freemarker:freemarker:2.3.35")
-            classpath("com.fasterxml.jackson.core:jackson-databind:2.21.6")
-            classpath("io.opentelemetry:opentelemetry-api:1.62.0")
-            classpath("org.jsoup:jsoup:1.23.1")
+            classpath("com.fasterxml.jackson.core:jackson-databind:2.22.3")
+            classpath("io.opentelemetry:opentelemetry-api:1.66.0")
+            classpath("org.jsoup:jsoup:1.23.2")
         }
     }
 }
