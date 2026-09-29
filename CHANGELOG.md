@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [2.4.6] - 2026-09-28
+
+PyVenv Manage 2 keeps its virtualenv icons working on PyCharm 2026.3 and refreshes build dependencies.
+
+### Fixed
+
+- Load the virtualenv icon from the resource paths used by PyCharm 2026.2 and 2026.3, avoiding the removed
+  `PythonVenvIcons` class ([#256](https://github.com/tox-dev/PyVenvManage/pull/256)).
+
+### Internal
+
+- Require patched Jackson 2.21.6 and 3.1.6 in the build and test classpaths, covering seven Dependabot alerts
+  ([#257](https://github.com/tox-dev/PyVenvManage/pull/257)).
+- Raise vulnerable Freemarker, OpenTelemetry, and jsoup dependencies
+  ([#254](https://github.com/tox-dev/PyVenvManage/pull/254)).
+- Build against PyCharm 2026.2.3 and refresh Gradle, plugin, and pre-commit dependencies
+  ([#253](https://github.com/tox-dev/PyVenvManage/pull/253), [#255](https://github.com/tox-dev/PyVenvManage/pull/255),
+  [#256](https://github.com/tox-dev/PyVenvManage/pull/256)).
+
 ## [2.4.5] - 2026-09-19
 
 PyVenv Manage 2 no longer touches internal platform API to resolve the Conda, Poetry, Hatch, uv, and Pipenv icons.
@@ -202,4 +221,5 @@ ${GITHUB_EVENT_RELEASE_BODY}
 [2.4.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.2...v2.4.3
 [2.4.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.3...v2.4.4
 [2.4.5]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.4...v2.4.5
-[unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.5...HEAD
+[2.4.6]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.5...v2.4.6
+[unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.6...HEAD
