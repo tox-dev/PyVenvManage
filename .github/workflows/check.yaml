@@ -14,7 +14,7 @@ permissions:
 jobs:
   build:
     name: 📦 Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: 🧹 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # main
@@ -48,7 +48,7 @@ jobs:
           path: ./build/distributions/content/*/*
   verify:
     name: 🔍 Verify (${{ matrix.label }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -96,7 +96,7 @@ jobs:
           path: ${{ github.workspace }}/build/reports/pluginVerifier
   lint:
     name: 🧹 Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: 🧹 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # main
@@ -118,7 +118,7 @@ jobs:
         run: ./gradlew ktlintCheck
   test:
     name: 🧪 Unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: 🧹 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # main
@@ -140,7 +140,7 @@ jobs:
         run: ./gradlew test koverVerify
   ui-test:
     name: 🖥️ UI tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: 🧹 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # main
