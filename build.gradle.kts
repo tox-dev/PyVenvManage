@@ -92,13 +92,14 @@ dependencies {
 }
 
 configurations.matching { it.name.startsWith("intellijPlatformTest") }.configureEach {
-    // The platform test framework pulls in OpenTelemetry 1.48.0, which has an open Dependabot alert.
+    // The platform test framework pulls in OpenTelemetry 1.48.0 and Jackson 3.1.4, both with open
+    // Dependabot alerts. The Jackson artifacts are version-pinned by tools.jackson:jackson-bom.
     resolutionStrategy.eachDependency {
         if (requested.group == "io.opentelemetry" && requested.version?.startsWith("1.48.") == true) {
             useVersion("1.62.0")
         }
         if (requested.group == "tools.jackson" && requested.name == "jackson-bom") {
-            useVersion("3.1.6")
+            useVersion("3.1.7")
         }
     }
 }
