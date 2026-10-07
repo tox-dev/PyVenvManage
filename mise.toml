@@ -1,0 +1,11 @@
+[settings]
+lockfile = true
+
+[tools]
+# zulu-21 runs Gradle; zulu-17 satisfies the Kotlin jvmToolchain(17) in build.gradle.kts.
+java = ["zulu-21", "zulu-17"]
+
+[env]
+# Gradle doesn't auto-detect mise-managed JDKs; point it at the secondary one explicitly
+# via the stable "zulu-17" alias symlink mise maintains, so this survives lockfile bumps.
+JDK17 = "{{ env.HOME }}/.local/share/mise/installs/java/zulu-17"
