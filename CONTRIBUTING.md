@@ -2,7 +2,8 @@
 
 ## Development Setup
 
-You'll need JDK 21 and Python 3.10+ (for creating test virtual environments). Build the plugin with:
+You'll need [mise](https://mise.jdx.dev) to provision the JDKs (`mise install`) and Python 3.10+ (for creating test
+virtual environments). Build the plugin with:
 
 ```bash
 ./gradlew buildPlugin
