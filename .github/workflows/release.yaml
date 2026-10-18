@@ -1,8 +1,9 @@
-# Secrets required: PUBLISH_TOKEN, PRIVATE_KEY, PRIVATE_KEY_PASSWORD, CERTIFICATE_CHAIN, RELEASE_TOKEN.
 name: Release
 on:
   release:
     types: [released]
+permissions:
+  contents: read
 jobs:
   publish:
     name: 🚀 Publish
@@ -17,6 +18,17 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.release.tag_name }} # zizmor: ignore[artipacked]
+          persist-credentials: false
+      - name: 🛡️ Require a changelog section
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
+            ! grep -Fq "## [${TAG#v}] - " CHANGELOG.md ||
+            ! grep -Fxq "pluginVersion=${TAG#v}-dev" gradle.properties; then
+            echo "::error::$TAG needs a matching changelog section and source version"
+            exit 1
+          fi
       - name: 🧹 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
@@ -28,6 +40,8 @@ jobs:
           cache: false
       - name: 🐘 Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0 # zizmor: ignore[cache-poisoning]
+        with:
+          cache-disabled: true
       - name: 🏷️ Set version from tag
         id: version
         run: |
@@ -37,11 +51,6 @@ jobs:
           sed -i "s/^pluginVersion=.*/pluginVersion=$VERSION/" gradle.properties
         env:
           GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
-      - name: 📝 Update changelog
-        if: ${{ github.event.release.body != '' }}
-        run: ./gradlew patchChangelog --release-note="$GITHUB_EVENT_RELEASE_BODY"
-        env:
-          GITHUB_EVENT_RELEASE_BODY: ${{ github.event.release.body }}
       - name: 📤 Publish to JetBrains Marketplace
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
@@ -51,7 +60,7 @@ jobs:
         run: ./gradlew publishPlugin
       - name: 📎 Upload release artifact
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
         run: gh release upload ${GITHUB_EVENT_RELEASE_TAG_NAME} ./build/distributions/*
   post-release:
@@ -59,70 +68,47 @@ jobs:
     needs: publish
     runs-on: ubuntu-26.04
     permissions:
-      contents: write
-      pull-requests: write
-    environment:
-      name: release
+      contents: read
+    environment: release-auth
     steps:
+      - id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.release.tag_name }}
-          persist-credentials: false
-      - name: 🔧 Set up mise (JDKs)
-        uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
-        with:
-          cache: false
-      - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0 # zizmor: ignore[cache-poisoning]
-      - name: 🏷️ Set version from tag
-        id: version
-        run: |
-          VERSION="${GITHUB_EVENT_RELEASE_TAG_NAME#v}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          sed -i "s/^pluginVersion=.*/pluginVersion=$VERSION/" gradle.properties
-        env:
-          GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
-      - name: 📝 Update changelog
-        if: ${{ github.event.release.body != '' }}
-        run: ./gradlew patchChangelog --release-note="$GITHUB_EVENT_RELEASE_BODY"
-        env:
-          GITHUB_EVENT_RELEASE_BODY: ${{ github.event.release.body }}
-      - name: 🔢 Calculate next dev version
-        id: next
-        run: |
-          VERSION="${STEPS_VERSION_OUTPUTS_VERSION}"
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-          echo "next_version=$MAJOR.$MINOR.$((PATCH + 1))-dev" >> $GITHUB_OUTPUT
-        env:
-          STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
+          token: ${{ steps.token.outputs.token }}
+          persist-credentials: true # zizmor: ignore[artipacked] this job pushes its post-release branch
       - name: 📝 Create post-release PR
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
-          STEPS_NEXT_OUTPUTS_NEXT_VERSION: ${{ steps.next.outputs.next_version }}
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          APP_SLUG: ${{ steps.token.outputs.app-slug }}
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          VERSION="${GITHUB_EVENT_RELEASE_TAG_NAME}"
-          NEXT_VERSION="${STEPS_NEXT_OUTPUTS_NEXT_VERSION}"
-          BRANCH="post-release-$VERSION"
-
-          git config user.email "action@github.com"
-          git config user.name "GitHub Action"
-          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-
-          cp CHANGELOG.md /tmp/CHANGELOG.md
-
+          set -euo pipefail
+          version="${TAG#v}"
+          IFS='.' read -r major minor patch <<< "$version"
+          next_version="$major.$minor.$((patch + 1))-dev"
+          branch="post-release-$TAG"
+          app_user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${app_user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
           git fetch origin main
-          git checkout -b $BRANCH origin/main
-
-          sed -i "s/^pluginVersion=.*/pluginVersion=$NEXT_VERSION/" gradle.properties
-          cp /tmp/CHANGELOG.md CHANGELOG.md
-
-          git add gradle.properties CHANGELOG.md
-          git commit -m "Bump version to $NEXT_VERSION after $VERSION release"
-          git push --set-upstream origin $BRANCH
-
+          git checkout -b "$branch" origin/main
+          sed -i "s/^pluginVersion=.*/pluginVersion=$next_version/" gradle.properties
+          git add gradle.properties
+          git commit -m "Bump version to $next_version after $TAG"
+          git push --set-upstream origin "$branch"
           gh pr create \
-            --title "Bump version to \`$NEXT_VERSION\`" \
-            --body "Post-release version bump after $VERSION release." \
-            --head $BRANCH
+            --title "Bump version to $next_version" \
+            --body "Set the next development version after $TAG." \
+            --head "$branch" \
+            --label 'skip news'

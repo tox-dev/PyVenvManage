@@ -55,19 +55,36 @@ PyVenv Manage 2 no longer touches internal platform API to resolve the Conda, Po
 
 ## [2.4.2] - 2026-07-29
 
-${GITHUB_EVENT_RELEASE_BODY}
+- Show “Set as Project Interpreter” only for directories containing `pyvenv.cfg`
+  ([#221](https://github.com/tox-dev/PyVenvManage/pull/221)).
 
 ## [2.4.1] - 2026-05-29
 
-${GITHUB_EVENT_RELEASE_BODY}
+- Check for the Python plugin through the public `PluginManager.isPluginInstalled` API.
+
+## [2.4.0] - 2026-05-29
+
+- Support IntelliJ Platform 262 (2026.2) and require build 262 or newer. Update Python SDK paths, virtual environment
+  detection, and uv icon lookup for the changed platform APIs.
+
+## [2.3.2] - 2026-05-29
+
+- Cap compatibility at IntelliJ Platform 261 (2026.1); support for build 262 starts with 2.4.0.
+
+## [2.3.1] - 2026-05-29
+
+- Keep plugin verification working with IntelliJ Platform Gradle plugin 2.16 while continuing to reject compatibility
+  problems.
 
 ## [2.3.0] - 2026-04-02
 
-${GITHUB_EVENT_RELEASE_BODY}
+- Show tool-specific icons for uv, Conda, Hatch, Poetry, and Pipenv virtual environments.
+- Create SDKs with the flavor data needed by PyCharm 2026.1 package managers.
+- Associate an SDK with a project only when its virtual environment is inside that project.
 
 ## [2.2.7] - 2026-03-31
 
-${GITHUB_EVENT_RELEASE_BODY}
+- Split the release workflow so publication and post-release automation use separate credentials.
 
 ## [2.2.6] - 2026-03-31
 
@@ -130,6 +147,11 @@ ${GITHUB_EVENT_RELEASE_BODY}
 
 - Fix python version display (#76) by @andrask in https://github.com/tox-dev/PyVenvManage/pull/77
 
+## [2.1.1] - 2025-10-08
+
+- Fix a crash while showing the notification after changing the Python SDK
+  ([#59](https://github.com/tox-dev/PyVenvManage/pull/59)).
+
 ## [2.1.0] - 2025-06-25
 
 - Add support for showing python version in tree view by @andrask in https://github.com/tox-dev/PyVenvManage/pull/51
@@ -162,6 +184,14 @@ ${GITHUB_EVENT_RELEASE_BODY}
 ### Fixed
 
 - Fix support for 2024.1
+
+## [1.3.10] - 2023-10-31
+
+- Support IntelliJ Platform 2023.1 and 2023.2, and remove the upper IDE version bound.
+
+## [1.3.5] - 2022-01-06
+
+- Add the popup option to files inside virtual environment directories.
 
 ## [1.3.4]
 
@@ -199,14 +229,17 @@ ${GITHUB_EVENT_RELEASE_BODY}
 
 [1.3.0]: https://github.com/pyvenvmanage/PyVenvManage/commits/v1.3.0
 [1.3.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.0...v1.3.1
+[1.3.10]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.5...1.3.10
 [1.3.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.1...v1.3.2
 [1.3.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.2...v1.3.3
-[1.3.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.3...v1.3.4
-[1.4.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.4...v1.4.0
-[2.0.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.4.0...v2.0.0
+[1.3.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.3...v1.3.4rc2
+[1.3.5]: https://github.com/pyvenvmanage/PyVenvManage/compare/v1.3.4rc2...v1.3.5
+[1.4.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/1.3.10...1.4.0
+[2.0.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/1.4.0...v2.0.0
 [2.0.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.0...v2.0.1
 [2.1.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.0.1...v2.1.0
-[2.1.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.0...v2.1.2
+[2.1.1]: https://github.com/tox-dev/PyVenvManage/compare/v2.1.0...v2.1.1
+[2.1.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.1...v2.1.2
 [2.2.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.1.2...v2.2.0
 [2.2.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.0...v2.2.1
 [2.2.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.1...v2.2.2
@@ -216,7 +249,10 @@ ${GITHUB_EVENT_RELEASE_BODY}
 [2.2.6]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.5...v2.2.6
 [2.2.7]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.6...v2.2.7
 [2.3.0]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.2.7...v2.3.0
-[2.4.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.3.0...v2.4.1
+[2.3.1]: https://github.com/tox-dev/PyVenvManage/compare/v2.3.0...v2.3.1
+[2.3.2]: https://github.com/tox-dev/PyVenvManage/compare/v2.3.1...v2.3.2
+[2.4.0]: https://github.com/tox-dev/PyVenvManage/compare/v2.3.2...v2.4.0
+[2.4.1]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.0...v2.4.1
 [2.4.2]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.1...v2.4.2
 [2.4.3]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.2...v2.4.3
 [2.4.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.3...v2.4.4

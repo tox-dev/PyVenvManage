@@ -1,8 +1,6 @@
-# Secrets required: RELEASE_TOKEN (so the opened PR triggers Build/Check workflows).
 name: Mise update
 on:
   schedule:
-    # Weekly, matching the Dependabot cadence in .github/dependabot.yaml.
     - cron: "0 9 * * 2"
   workflow_dispatch:
 permissions:
@@ -10,9 +8,10 @@ permissions:
 jobs:
   bump:
     name: ⬆️ Bump mise-managed JDKs
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-26.04
-    permissions:
-      contents: read
+    outputs:
+      changed: ${{ steps.changed.outputs.changed }}
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -22,27 +21,69 @@ jobs:
         uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
         with:
           install: false
+          cache: false
       - name: ⬆️ Bump the lockfile
         run: mise lock --bump
-      - name: 📝 Open a PR if the lockfile changed
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      - name: Check the lockfile
+        id: changed
         run: |
           if git diff --quiet -- mise.lock; then
-            echo "No JDK updates available."
-            exit 0
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
           fi
-
-          BRANCH="mise-update-$(date +%Y%m%d)"
-          git config user.email "action@github.com"
-          git config user.name "GitHub Action"
-          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git checkout -b "$BRANCH"
+      - name: Store the lockfile
+        if: steps.changed.outputs.changed == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mise-lock
+          path: mise.lock
+  open-pr:
+    name: 📝 Open a lockfile PR
+    needs: bump
+    if: needs.bump.outputs.changed == 'true'
+    runs-on: ubuntu-26.04
+    environment: release-auth
+    permissions:
+      contents: read
+    steps:
+      - id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+      - name: 📥 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ steps.token.outputs.token }}
+          persist-credentials: true # zizmor: ignore[artipacked] this job pushes its lockfile branch
+      - name: Download the lockfile
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: mise-lock
+          path: ${{ runner.temp }}/mise-lock
+      - name: 📝 Open a PR
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          APP_SLUG: ${{ steps.token.outputs.app-slug }}
+        run: |
+          set -euo pipefail
+          branch="mise-update-$(date -u +%Y%m%d)"
+          app_user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${app_user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+          cp "$RUNNER_TEMP/mise-lock/mise.lock" mise.lock
+          git checkout -b "$branch"
           git add mise.lock
-          git commit -m "⬆️ build(deps): bump mise-managed JDKs"
-          git push --set-upstream origin "$BRANCH"
-
+          git commit -m "Bump mise-managed JDKs"
+          git push --set-upstream origin "$branch"
           gh pr create \
-            --title "⬆️ build(deps): bump mise-managed JDKs" \
-            --body "Weekly refresh of mise.lock within the versions pinned in mise.toml." \
-            --head "$BRANCH"
+            --title "Bump mise-managed JDKs" \
+            --body "Refresh mise.lock within the versions pinned in mise.toml." \
+            --head "$branch" \
+            --label 'skip news'
