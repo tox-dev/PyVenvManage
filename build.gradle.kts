@@ -242,9 +242,6 @@ tasks {
     wrapper {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
     }
-    publishPlugin {
-        dependsOn(patchChangelog)
-    }
     buildSearchableOptions {
         enabled = false
     }

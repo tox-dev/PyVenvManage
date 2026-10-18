@@ -5,6 +5,8 @@
 [![Rating](https://img.shields.io/jetbrains/plugin/r/rating/20536)](https://plugins.jetbrains.com/plugin/20536)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/20536)](https://plugins.jetbrains.com/plugin/20536)
 
+See the [changelog](CHANGELOG.md) for released changes.
+
 ## Introduction
 
 <!-- Plugin description -->
