@@ -1,7 +1,7 @@
 [dependency-groups]
 release = [
   "prek>=0.5",
-  "release-creator @ git+https://github.com/tox-dev/release-creator@cf1d89453fc88887e5cf924f6bc1b83157d3a6ac",
+  "release-creator @ git+https://github.com/tox-dev/release-creator@dec1a747db4f9718450861cd9f4357f579b6e176",
   "towncrier>=26.9",
 ]
 

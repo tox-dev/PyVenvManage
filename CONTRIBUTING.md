@@ -63,8 +63,9 @@ Check code style with `./gradlew ktlintCheck` or auto-fix issues with `./gradlew
 ## Continuous Integration
 
 The CI pipeline in `.github/workflows/check.yaml` builds the plugin, runs linting, executes unit tests with coverage
-verification followed by UI tests, verifies the plugin against PyCharm Community and PyCharm Professional, and creates a
-release draft on the main branch.
+verification followed by UI tests, verifies the plugin against PyCharm Community and PyCharm Professional, and requires
+a changelog fragment or `skip news` on pull requests. The aggregate check blocks a pull request if any required job
+fails.
 
 The test job runs unit tests with `koverVerify`, then starts Xvfb and the IDE with robot-server, and finally runs UI
 tests for end-to-end validation.
@@ -102,11 +103,17 @@ version for a `breaking` fragment, a minor version for a `feature` fragment, and
 It adds the release section to `CHANGELOG.md`, runs `prek`, and pushes the release commit and `v`-prefixed tag using the
 repository-scoped App. The dispatch does not ask for a version number.
 
-The tag workflow runs `prek`, checks the changelog, and sets `pluginVersion` for that build. It signs the plugin, checks
-the signature, ZIP contents, and embedded version, then publishes it to the
-[JetBrains Marketplace](https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2). Once Marketplace publication
-succeeds, it checks that the signed ZIP has not changed, then creates the GitHub Release with the same ZIP and
-changelog-based notes. The final job opens a PR for the next development version in `gradle.properties`.
+The tag workflow runs `prek`, checks the changelog, and sets `pluginVersion` for a keyless Gradle build. A separate job
+checks the unsigned ZIP's SHA256 digest, signs it without running Gradle, then checks the signature, ZIP contents, and
+embedded version. Another job checks whether the same version is already on
+[JetBrains Marketplace](https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2). An identical published archive
+needs no second upload; a different one stops the release. If the version is absent, a fresh job uploads the verified
+ZIP. The GitHub Release uses that ZIP and changelog-based notes. The final job opens a PR for the next development
+version in `gradle.properties`.
+
+Marketplace may hold a new upload for approval before its public download is available. If a retry reports that the
+version already exists but cannot verify its archive, wait until Marketplace exposes the version, then rerun the tag
+workflow. The retry will verify the published archive before creating the GitHub Release.
 
 The release workflow requires repository secrets configured by maintainers: `PUBLISH_TOKEN` for JetBrains Marketplace
 upload, and `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, and `PRIVATE_KEY_PASSWORD` for plugin signing.
