@@ -93,7 +93,7 @@ jobs:
         with:
           name: generated-notes
           path: ${{ runner.temp }}/generated-notes
-      - uses: tox-dev/github-workflows/render-release-notes@8db87d4730353b61630d66cbc592d6bed0c85d2b
+      - uses: tox-dev/github-workflows/render-release-notes@9a4e76e2f4901856f2784f6c0efc89278c518b1f
         with:
           tag: ${{ github.ref_name }}
           changelog: CHANGELOG.md
@@ -198,7 +198,7 @@ jobs:
           echo "path=${archives[0]}" >>"$GITHUB_OUTPUT"
       - name: Sign verified plugin ZIP
         id: signed
-        uses: tox-dev/github-workflows/sign-jetbrains-plugin@8db87d4730353b61630d66cbc592d6bed0c85d2b
+        uses: tox-dev/github-workflows/sign-jetbrains-plugin@9a4e76e2f4901856f2784f6c0efc89278c518b1f
         with:
           archive: ${{ steps.archive.outputs.path }}
           sha256: ${{ needs.build-unsigned.outputs.archive_sha }}
@@ -309,7 +309,7 @@ jobs:
           echo "name=${channel%%.*}" >>"$GITHUB_OUTPUT"
       - name: Upload signed ZIP
         if: needs.marketplace-check.outputs.publish == 'true'
-        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@8db87d4730353b61630d66cbc592d6bed0c85d2b
+        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@9a4e76e2f4901856f2784f6c0efc89278c518b1f
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         with:
@@ -341,7 +341,7 @@ jobs:
           unzip -tq "${archives[0]}" >/dev/null
           read -r digest _ < <(sha256sum "${archives[0]}")
           test "$digest" = "$EXPECTED_SHA"
-      - uses: tox-dev/github-workflows/publish-github-release@8db87d4730353b61630d66cbc592d6bed0c85d2b
+      - uses: tox-dev/github-workflows/publish-github-release@9a4e76e2f4901856f2784f6c0efc89278c518b1f
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -444,7 +444,7 @@ jobs:
         with:
           artifact-ids: ${{ needs.post-release-prepare.outputs.artifact-id }}
           path: ${{ runner.temp }}/post-release
-      - uses: tox-dev/github-workflows/publish-post-release-pr@8db87d4730353b61630d66cbc592d6bed0c85d2b
+      - uses: tox-dev/github-workflows/publish-post-release-pr@9a4e76e2f4901856f2784f6c0efc89278c518b1f
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         with:
