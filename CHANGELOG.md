@@ -1,5 +1,7 @@
 # PyVenvManage Changelog
 
+## [Unreleased]
+
 <!-- towncrier release notes start -->
 
 ## [2.4.6] - 2026-09-28
