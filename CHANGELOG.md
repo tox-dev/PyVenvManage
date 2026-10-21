@@ -8,6 +8,13 @@
 
 ## [2.4.6] - 2026-09-28
 
+<a name="release-2-4-6-fixed"></a>
+
+### Fixed
+
+- Keep virtual environment icons loading on PyCharm 2026.3 ([#256](https://github.com/tox-dev/PyVenvManage/pull/256)) by
+  [@gaborbernat](https://github.com/gaborbernat).
+
 <a name="release-2-4-5"></a>
 
 ## [2.4.5] - 2026-09-19
