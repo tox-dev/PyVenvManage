@@ -2,9 +2,12 @@ name: Prepare release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: Version to release, without a v prefix
+      bump:
+        description: Version bump type
         required: true
+        type: choice
+        options: [auto, major, minor, patch]
+        default: auto
 permissions: {}
 concurrency:
   group: prepare-release
@@ -12,90 +15,16 @@ concurrency:
 jobs:
   prepare:
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-26.04
-    environment: release-auth
+    uses: tox-dev/github-workflows/.github/workflows/prepare-towncrier-release.yaml@5e11f2254a4dcb7102747d312ad7db48a2e9b0cb
     permissions:
       contents: read
-    steps:
-      - id: token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
-        with:
-          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
-          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
-          permission-contents: write
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          token: ${{ steps.token.outputs.token }}
-          persist-credentials: true # zizmor: ignore[artipacked] the release job pushes main and its tag
-      - name: Build changelog and create release
-        env:
-          VERSION: ${{ inputs.version }}
-          GH_TOKEN: ${{ steps.token.outputs.token }}
-          APP_SLUG: ${{ steps.token.outputs.app-slug }}
-        run: |
-          set -euo pipefail
-          git fetch origin main
-          git reset --hard origin/main
-          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::expected a major.minor.patch version"
-            exit 1
-          fi
-          current=$(sed -n 's/^pluginVersion=//p' gradle.properties)
-          if [[ "$current" != "$VERSION-dev" ]]; then
-            echo "::error::pluginVersion must be $VERSION-dev before preparation"
-            exit 1
-          fi
-          latest=$(git tag --list 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
-          tag="v$VERSION"
-          if [[ "$latest" == "$tag" || "$(printf '%s\n' "$latest" "$tag" | sort -V | tail -n 1)" != "$tag" ]]; then
-            echo "::error::$tag must be newer than $latest"
-            exit 1
-          fi
-          if awk '/^## \[Unreleased\]/{inside=1;next} /^## \[[0-9]/{inside=0} inside && NF {found=1} END {exit !found}' CHANGELOG.md; then
-            echo "::error::move the Unreleased entries into news fragments"
-            exit 1
-          fi
-          mapfile -d '' fragments < <(find changelog.d -maxdepth 1 -type f -name '*.md' -print0 | sort -z)
-          if (( ${#fragments[@]} == 0 )); then
-            echo "::error::no news fragments to release"
-            exit 1
-          fi
-          for fragment in "${fragments[@]}"; do
-            if [[ ! "$fragment" =~ ^changelog\.d/[0-9]+\.(feature|bugfix|doc)\.md$ || ! -s "$fragment" ]]; then
-              echo "::error::invalid or empty news fragment: $fragment"
-              exit 1
-            fi
-          done
-          {
-            for fragment in "${fragments[@]}"; do
-              cat "$fragment"
-              printf '\n\n'
-            done
-          } > "$RUNNER_TEMP/release-notes.md"
-          {
-            sed -n '1,/^## \[Unreleased\]/p' CHANGELOG.md
-            printf '\n## [%s] - %s\n\n' "$VERSION" "$(date -u +%F)"
-            cat "$RUNNER_TEMP/release-notes.md"
-            awk '/^## \[[0-9]/{copy=1} copy {print}' CHANGELOG.md
-          } > "$RUNNER_TEMP/CHANGELOG.md"
-          mv "$RUNNER_TEMP/CHANGELOG.md" CHANGELOG.md
-          sed -i "s|^\[unreleased\]: .*|[unreleased]: https://github.com/${GITHUB_REPOSITORY}/compare/$tag...HEAD|" CHANGELOG.md
-          printf '[%s]: https://github.com/%s/compare/%s...%s\n' "$VERSION" "$GITHUB_REPOSITORY" "$latest" "$tag" >> CHANGELOG.md
-          git rm -- "${fragments[@]}"
-          app_user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
-          git config user.name "${APP_SLUG}[bot]"
-          git config user.email "${app_user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
-          git add CHANGELOG.md changelog.d
-          git commit -m "Prepare $tag"
-          git tag -a "$tag" -m "Release $tag"
-          git push --atomic origin HEAD:main "refs/tags/$tag"
-          printf '\n[JetBrains Marketplace](https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2)\n' >> "$RUNNER_TEMP/release-notes.md"
-          if [[ -n "$latest" ]]; then
-            printf '\n**Full Changelog**: https://github.com/%s/compare/%s...%s\n' "$GITHUB_REPOSITORY" "$latest" "$tag" >> "$RUNNER_TEMP/release-notes.md"
-          else
-            printf '\n**Full Changelog**: https://github.com/%s/commits/%s\n' "$GITHUB_REPOSITORY" "$tag" >> "$RUNNER_TEMP/release-notes.md"
-          fi
-          gh release create "$tag" --verify-tag --title "$tag" --notes-file "$RUNNER_TEMP/release-notes.md"
+      pull-requests: read
+    with:
+      bump: ${{ inputs.bump }}
+      tag-prefix: v
+      changelog: CHANGELOG.md
+      fragments: changelog.d
+      format: markdown
+      annotated: true
+    secrets:
+      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}

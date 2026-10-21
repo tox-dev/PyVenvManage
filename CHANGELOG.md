@@ -1,6 +1,6 @@
 # PyVenvManage Changelog
 
-## [Unreleased]
+<!-- towncrier release notes start -->
 
 ## [2.4.6] - 2026-09-28
 
@@ -258,4 +258,3 @@ PyVenv Manage 2 no longer touches internal platform API to resolve the Conda, Po
 [2.4.4]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.3...v2.4.4
 [2.4.5]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.4...v2.4.5
 [2.4.6]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.5...v2.4.6
-[unreleased]: https://github.com/pyvenvmanage/PyVenvManage/compare/v2.4.6...HEAD
