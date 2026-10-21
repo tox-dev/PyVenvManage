@@ -43,6 +43,8 @@ jobs:
     environment:
       name: release
       url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
+    outputs:
+      archive_sha: ${{ steps.archive.outputs.sha }}
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -84,6 +86,13 @@ jobs:
           unzip -p build/distributions/*-${TAG#v}-signed.zip "*/lib/*-${TAG#v}.jar" > "$RUNNER_TEMP/plugin.jar"
           unzip -p "$RUNNER_TEMP/plugin.jar" META-INF/plugin.xml > "$RUNNER_TEMP/plugin.xml"
           grep -Fq "<version>${TAG#v}</version>" "$RUNNER_TEMP/plugin.xml"
+      - name: Record signed ZIP digest
+        id: archive
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          read -r digest _ < <(sha256sum build/distributions/*-${TAG#v}-signed.zip)
+          echo "sha=$digest" >> "$GITHUB_OUTPUT"
       - name: 📤 Publish to JetBrains Marketplace
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
@@ -91,6 +100,13 @@ jobs:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
         run: ./gradlew publishPlugin
+      - name: Check published ZIP digest
+        env:
+          EXPECTED_SHA: ${{ steps.archive.outputs.sha }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          read -r digest _ < <(sha256sum build/distributions/*-${TAG#v}-signed.zip)
+          test "$digest" = "$EXPECTED_SHA"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: plugin-distribution
@@ -142,7 +158,12 @@ jobs:
           name: plugin-distribution
           path: dist/
       - name: Check downloaded plugin ZIP
-        run: unzip -tq dist/*-signed.zip >/dev/null
+        env:
+          EXPECTED_SHA: ${{ needs.publish.outputs.archive_sha }}
+        run: |
+          unzip -tq dist/*-signed.zip >/dev/null
+          read -r digest _ < <(sha256sum dist/*-signed.zip)
+          test "$digest" = "$EXPECTED_SHA"
       - name: Publish GitHub Release with plugin ZIP
         env:
           GH_TOKEN: ${{ github.token }}

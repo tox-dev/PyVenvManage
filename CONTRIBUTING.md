@@ -105,8 +105,8 @@ repository-scoped App. The dispatch does not ask for a version number.
 The tag workflow runs `prek`, checks the changelog, and sets `pluginVersion` for that build. It signs the plugin, checks
 the signature, ZIP contents, and embedded version, then publishes it to the
 [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2). Once Marketplace publication
-succeeds, it creates the GitHub Release with the signed ZIP and changelog-based notes. The final job opens a PR for the
-next development version in `gradle.properties`.
+succeeds, it checks that the signed ZIP has not changed, then creates the GitHub Release with the same ZIP and
+changelog-based notes. The final job opens a PR for the next development version in `gradle.properties`.
 
 The release workflow requires repository secrets configured by maintainers: `PUBLISH_TOKEN` for JetBrains Marketplace
 upload, and `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, and `PRIVATE_KEY_PASSWORD` for plugin signing.
