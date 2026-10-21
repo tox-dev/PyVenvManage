@@ -102,10 +102,11 @@ version for a `breaking` fragment, a minor version for a `feature` fragment, and
 It adds the release section to `CHANGELOG.md`, runs `prek`, and pushes the release commit and `v`-prefixed tag using the
 repository-scoped App. The dispatch does not ask for a version number.
 
-The tag workflow runs `prek`, checks the changelog, sets `pluginVersion` for that build, signs the plugin, and publishes
-it to the [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2). Once Marketplace
-publication succeeds, it creates the GitHub Release with the plugin ZIP and changelog-based notes. The final job opens a
-PR for the next development version in `gradle.properties`.
+The tag workflow runs `prek`, checks the changelog, and sets `pluginVersion` for that build. It signs the plugin, checks
+the signature, ZIP contents, and embedded version, then publishes it to the
+[JetBrains Marketplace](https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2). Once Marketplace publication
+succeeds, it creates the GitHub Release with the signed ZIP and changelog-based notes. The final job opens a PR for the
+next development version in `gradle.properties`.
 
 The release workflow requires repository secrets configured by maintainers: `PUBLISH_TOKEN` for JetBrains Marketplace
 upload, and `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, and `PRIVATE_KEY_PASSWORD` for plugin signing.

@@ -65,6 +65,25 @@ jobs:
         env:
           TAG: ${{ github.ref_name }}
         run: sed -i "s/^pluginVersion=.*/pluginVersion=${TAG#v}/" gradle.properties
+      - name: Build signed plugin ZIP
+        env:
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+        run: ./gradlew signPlugin
+      - name: Verify plugin structure and signature
+        env:
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+        run: ./gradlew verifyPluginStructure verifyPluginSignature
+      - name: Check signed ZIP and plugin version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          unzip -tq build/distributions/*-${TAG#v}-signed.zip >/dev/null
+          unzip -p build/distributions/*-${TAG#v}-signed.zip "*/lib/*-${TAG#v}.jar" > "$RUNNER_TEMP/plugin.jar"
+          unzip -p "$RUNNER_TEMP/plugin.jar" META-INF/plugin.xml > "$RUNNER_TEMP/plugin.xml"
+          grep -Fq "<version>${TAG#v}</version>" "$RUNNER_TEMP/plugin.xml"
       - name: 📤 Publish to JetBrains Marketplace
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
@@ -75,7 +94,7 @@ jobs:
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: plugin-distribution
-          path: build/distributions/*
+          path: build/distributions/*-signed.zip
           if-no-files-found: error
   github-release:
     needs: publish
@@ -122,11 +141,13 @@ jobs:
         with:
           name: plugin-distribution
           path: dist/
+      - name: Check downloaded plugin ZIP
+        run: unzip -tq dist/*-signed.zip >/dev/null
       - name: Publish GitHub Release with plugin ZIP
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-        run: gh release create "$TAG" dist/* --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md"
+        run: gh release create "$TAG" dist/*-signed.zip --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md"
   post-release:
     name: 📝 Post-release version bump
     needs: github-release
