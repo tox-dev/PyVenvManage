@@ -4,6 +4,7 @@ on:
     branches: [main]
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
+  workflow_dispatch:
   # JetBrains moves platform APIs and deletes EAP artifacts between our commits, so build against them daily.
   schedule:
     - cron: "0 8 * * *"
