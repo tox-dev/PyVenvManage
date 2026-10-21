@@ -16,11 +16,15 @@ jobs:
     outputs:
       changed: ${{ steps.changed.outputs.changed }}
       digest: ${{ steps.digest.outputs.sha }}
+      base-commit: ${{ steps.base.outputs.commit }}
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Record source commit
+        id: base
+        run: echo "commit=$(git rev-parse HEAD)" >>"$GITHUB_OUTPUT"
       - name: 🔧 Set up mise
         uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
         with:
@@ -59,15 +63,24 @@ jobs:
         with:
           name: mise-lock
           path: mise.lock
-  open-pr:
-    name: 📝 Open a lockfile PR
+  prepare-pr:
+    name: Prepare lockfile PR
     needs: bump
     if: needs.bump.outputs.changed == 'true'
     runs-on: ubuntu-26.04
-    environment: release-auth
     permissions:
       contents: read
+    outputs:
+      base-commit: ${{ steps.change.outputs.base-commit }}
+      candidate-commit: ${{ steps.change.outputs.candidate-commit }}
+      branch: ${{ steps.branch.outputs.name }}
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.bump.outputs.base-commit }}
+          fetch-depth: 0
+          persist-credentials: false
       - name: Download the lockfile
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -81,6 +94,53 @@ jobs:
           test ! -L "$RUNNER_TEMP/mise-lock/mise.lock"
           read -r digest _ < <(sha256sum "$RUNNER_TEMP/mise-lock/mise.lock")
           test "$digest" = "$EXPECTED_SHA"
+      - name: Select lockfile branch
+        id: branch
+        env:
+          DIGEST: ${{ needs.bump.outputs.digest }}
+        run: echo "name=mise-update-${DIGEST:0:12}" >>"$GITHUB_OUTPUT"
+      - name: Resolve the release App author
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          slug=tox-dev-pyvenvmanage-release
+          app_user_id=$(gh api "/users/${slug}[bot]" --jq .id)
+          git config user.name "${slug}[bot]"
+          git config user.email "${app_user_id}+${slug}[bot]@users.noreply.github.com"
+      - name: Prepare the exact lockfile change
+        id: change
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/mise-pr"
+          base_commit=$(git rev-parse HEAD)
+          cp "$RUNNER_TEMP/mise-lock/mise.lock" mise.lock
+          git add mise.lock
+          printf 'mise.lock\t%s\n' "$(git rev-parse :mise.lock)" >"$RUNNER_TEMP/mise-pr/paths.tsv"
+          printf 'Refresh mise.lock within the versions pinned in mise.toml.\n' >"$RUNNER_TEMP/mise-pr/body.md"
+          candidate_commit=
+          if ! git diff --cached --quiet; then
+            git commit -m "Bump mise-managed JDKs"
+            candidate_commit=$(git rev-parse HEAD)
+            git branch release-candidate HEAD
+            git bundle create "$RUNNER_TEMP/mise-pr/candidate.bundle" refs/heads/release-candidate
+          fi
+          echo "base-commit=$base_commit" >>"$GITHUB_OUTPUT"
+          echo "candidate-commit=$candidate_commit" >>"$GITHUB_OUTPUT"
+      - id: upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mise-pr-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/mise-pr/*
+          if-no-files-found: error
+  open-pr:
+    name: 📝 Open a lockfile PR
+    needs: prepare-pr
+    runs-on: ubuntu-26.04
+    environment: release-auth
+    permissions:
+      contents: read
+    steps:
       - id: token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
@@ -91,40 +151,22 @@ jobs:
           permission-contents: write
           permission-pull-requests: write
           permission-issues: write
-      - name: 📥 Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          token: ${{ steps.token.outputs.token }}
-          persist-credentials: true # zizmor: ignore[artipacked] this job pushes its lockfile branch
-      - name: Select lockfile branch
-        id: branch
-        run: echo "name=mise-update-$(date -u +%Y%m%d)" >>"$GITHUB_OUTPUT"
-      - name: Identify App commit author
+          artifact-ids: ${{ needs.prepare-pr.outputs.artifact-id }}
+          path: ${{ runner.temp }}/mise-pr
+      - uses: tox-dev/github-workflows/publish-post-release-pr@8db87d4730353b61630d66cbc592d6bed0c85d2b
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
-          APP_SLUG: ${{ steps.token.outputs.app-slug }}
-        run: |
-          app_user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
-          git config user.name "${APP_SLUG}[bot]"
-          git config user.email "${app_user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
-      - name: Apply checked lockfile
-        run: cp "$RUNNER_TEMP/mise-lock/mise.lock" mise.lock
-      - name: Commit lockfile
-        env:
-          BRANCH: ${{ steps.branch.outputs.name }}
-        run: |
-          git checkout -b "$BRANCH"
-          git add mise.lock
-          git commit -m "Bump mise-managed JDKs"
-      - name: Push lockfile branch
-        env:
-          BRANCH: ${{ steps.branch.outputs.name }}
-        run: git push --set-upstream origin "$BRANCH"
-      - name: Open lockfile pull request
-        env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
-          BRANCH: ${{ steps.branch.outputs.name }}
-        run: |
-          gh pr create --title "Bump mise-managed JDKs" \
-            --body "Refresh mise.lock within the versions pinned in mise.toml." \
-            --head "$BRANCH" --label 'skip news'
+        with:
+          repository: ${{ github.repository }}
+          app-slug: ${{ steps.token.outputs.app-slug }}
+          base: main
+          base-commit: ${{ needs.prepare-pr.outputs.base-commit }}
+          branch: ${{ needs.prepare-pr.outputs.branch }}
+          title: Bump mise-managed JDKs
+          body-file: ${{ runner.temp }}/mise-pr/body.md
+          paths-file: ${{ runner.temp }}/mise-pr/paths.tsv
+          allowed-paths: mise.lock
+          bundle: ${{ needs.prepare-pr.outputs.candidate-commit != '' && format('{0}/mise-pr/candidate.bundle', runner.temp) || '' }}
+          candidate-commit: ${{ needs.prepare-pr.outputs.candidate-commit }}

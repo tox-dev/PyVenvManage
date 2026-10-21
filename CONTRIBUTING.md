@@ -111,9 +111,9 @@ needs no second upload; a different one stops the release. If the version is abs
 ZIP. The GitHub Release uses that ZIP and changelog-based notes. The final job opens a PR for the next development
 version in `gradle.properties`.
 
-Marketplace may hold a new upload for approval before its public download is available. If a retry reports that the
-version already exists but cannot verify its archive, wait until Marketplace exposes the version, then rerun the tag
-workflow. The retry will verify the published archive before creating the GitHub Release.
+The GitHub Release is published after Marketplace accepts the upload. Marketplace may hold the update for approval, so
+its download can remain unavailable. Once the version is public, run **Verify Marketplace release** with its tag to
+compare the Marketplace ZIP with the signed GitHub asset. Do not rerun the upload to check its approval status.
 
 The release workflow requires repository secrets configured by maintainers: `PUBLISH_TOKEN` for JetBrains Marketplace
 upload, and `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, and `PRIVATE_KEY_PASSWORD` for plugin signing.

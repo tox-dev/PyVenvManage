@@ -1,0 +1,68 @@
+name: Verify Marketplace release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published v-prefixed release tag
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: latest-known
+          python-version: "3.15"
+          enable-cache: false
+      - name: Install locked release tools
+        run: |
+          uv venv --python 3.15 "$RUNNER_TEMP/release-tools"
+          uv pip sync --preview-features pylock \
+            --python "$RUNNER_TEMP/release-tools/bin/python" --group release pylock.toml
+          echo "$RUNNER_TEMP/release-tools/bin" >>"$GITHUB_PATH"
+      - name: Verify exact release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          case "$TAG" in v[0-9]*) ;; *) exit 1 ;; esac
+          case "$TAG" in *[!A-Za-z0-9._-]*) exit 1 ;; esac
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq .ref)" = "refs/tags/$TAG"
+      - name: Download the signed release ZIP
+        id: archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir dist
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*-signed.zip' --dir dist
+          archives=(dist/*-signed.zip)
+          test "${#archives[@]}" -eq 1
+          test -f "${archives[0]}"
+          echo "path=${archives[0]}" >>"$GITHUB_OUTPUT"
+      - name: Check GitHub asset digest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          ARCHIVE: ${{ steps.archive.outputs.path }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" >"$RUNNER_TEMP/release.json"
+          name=${ARCHIVE##*/}
+          expected=$(jq -r --arg name "$name" '[.assets[] | select(.name == $name) | .digest] |
+            if length == 1 then .[0] else error("signed asset set differs") end' "$RUNNER_TEMP/release.json")
+          test "$expected" = "sha256:$(sha256sum "$ARCHIVE" | cut -d' ' -f1)"
+      - name: Compare public Marketplace member bytes
+        env:
+          TAG: ${{ inputs.tag }}
+          ARCHIVE: ${{ steps.archive.outputs.path }}
+        run: release-creator marketplace --plugin-id com.github.pyvenvmanage.pyvenv --version "${TAG#v}" --archive "$ARCHIVE" --mode verify
