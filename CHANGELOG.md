@@ -333,7 +333,16 @@
 
 - Show the interpreter popup option for files inside virtual environment directories by
   [@andrask](https://github.com/andrask).
-- Limit compatibility to IntelliJ Platform 2021.3 and earlier by [@andrask](https://github.com/andrask).
+
+<a name="release-1-3-4"></a>
+
+## [1.3.4] - 2021-10-04
+
+<a name="release-1-3-4-fixed"></a>
+
+### Fixed
+
+- Restore compatibility with IntelliJ Platform 2021.3 by [@andrask](https://github.com/andrask).
 
 <a name="release-1-3-4rc2"></a>
 
@@ -438,9 +447,10 @@
 [1.3.10]: https://github.com/tox-dev/PyVenvManage/compare/d98b56e...1.3.10
 [1.3.2]: https://github.com/tox-dev/PyVenvManage/compare/1.3.1...v1.3.2
 [1.3.3]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.2...v1.3.3
+[1.3.4]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.4rc2...fe9ee74
 [1.3.4rc]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.3...v1.3.4rc
 [1.3.4rc2]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.4rc...v1.3.4rc2
-[1.3.5]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.4rc2...v1.3.5
+[1.3.5]: https://github.com/tox-dev/PyVenvManage/compare/fe9ee74...v1.3.5
 [1.3.7]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.5...c6f850a
 [1.3.8]: https://github.com/tox-dev/PyVenvManage/compare/c6f850a...eaa23b7
 [1.3.9]: https://github.com/tox-dev/PyVenvManage/compare/eaa23b7...d98b56e
