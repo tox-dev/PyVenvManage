@@ -164,25 +164,26 @@ jobs:
             build/idea-sandbox/**/log/idea.log
   changelog:
     name: 📝 News fragment
-    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'skip news')
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Require a user-facing change
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          python-version: "3.15"
+          enable-cache: false
+      - name: Install locked release tools
         run: |
-          found=0
-          while IFS= read -r path; do
-            if [[ "$path" =~ ^changelog\.d/[0-9]+\.(feature|bugfix|doc)\.md$ && -s "$path" ]]; then
-              found=1
-            fi
-          done < <(git diff --name-only --diff-filter=AM "origin/$GITHUB_BASE_REF"...HEAD)
-          if (( found == 0 )); then
-            echo "::error::add a nonempty changelog.d/<PR>.<type>.md fragment or apply skip news"
-            exit 1
-          fi
+          uv venv --python 3.15 "$RUNNER_TEMP/release-tools"
+          uv pip sync --preview-features pylock --python "$RUNNER_TEMP/release-tools/bin/python" --group release pylock.toml
+          echo "$RUNNER_TEMP/release-tools/bin" >>"$GITHUB_PATH"
+      - uses: tox-dev/github-workflows/validate-news@5e11f2254a4dcb7102747d312ad7db48a2e9b0cb
   gate:
     name: Required checks pass
     if: always()
