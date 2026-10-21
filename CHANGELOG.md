@@ -282,8 +282,46 @@
 
 ### Added
 
-- Support IntelliJ Platform 2023.1 and 2023.2 without an upper IDE version bound by
+- Remove the upper IDE version bound so the plugin can install on newer IntelliJ Platform builds
+  ([#18](https://github.com/tox-dev/PyVenvManage/pull/18)) by [@gaborbernat](https://github.com/gaborbernat).
+
+<a name="release-1-3-9"></a>
+
+## [1.3.9] - 2023-05-16
+
+<a name="release-1-3-9-added"></a>
+
+### Added
+
+- Support IntelliJ Platform 2023.2 by [@gaborbernat](https://github.com/gaborbernat).
+
+<a name="release-1-3-8"></a>
+
+## [1.3.8] - 2023-05-16
+
+<a name="release-1-3-8-added"></a>
+
+### Added
+
+- Support IntelliJ Platform 2023.1 ([#14](https://github.com/tox-dev/PyVenvManage/pull/14)) by
   [@gaborbernat](https://github.com/gaborbernat).
+
+<a name="release-1-3-7"></a>
+
+## [1.3.7] - 2023-01-16
+
+<a name="release-1-3-7-added"></a>
+
+### Added
+
+- Support IntelliJ Platform 2021.1 through 2022.3; older IDE builds are no longer supported
+  ([#8](https://github.com/tox-dev/PyVenvManage/pull/8)) by [@gaborbernat](https://github.com/gaborbernat).
+
+<a name="release-1-3-7-changes"></a>
+
+### Changes
+
+- Publish as the separate PyVenv Manage 2 Marketplace plugin by [@andrask](https://github.com/andrask).
 
 <a name="release-1-3-5"></a>
 
@@ -397,12 +435,15 @@
 [1.2]: https://github.com/tox-dev/PyVenvManage/compare/1.1...1.2
 [1.3.0]: https://github.com/tox-dev/PyVenvManage/compare/1.2...1.3.0
 [1.3.1]: https://github.com/tox-dev/PyVenvManage/compare/1.3.0...1.3.1
-[1.3.10]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.5...1.3.10
+[1.3.10]: https://github.com/tox-dev/PyVenvManage/compare/d98b56e...1.3.10
 [1.3.2]: https://github.com/tox-dev/PyVenvManage/compare/1.3.1...v1.3.2
 [1.3.3]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.2...v1.3.3
 [1.3.4rc]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.3...v1.3.4rc
 [1.3.4rc2]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.4rc...v1.3.4rc2
 [1.3.5]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.4rc2...v1.3.5
+[1.3.7]: https://github.com/tox-dev/PyVenvManage/compare/v1.3.5...c6f850a
+[1.3.8]: https://github.com/tox-dev/PyVenvManage/compare/c6f850a...eaa23b7
+[1.3.9]: https://github.com/tox-dev/PyVenvManage/compare/eaa23b7...d98b56e
 [1.4.0]: https://github.com/tox-dev/PyVenvManage/compare/1.3.10...1.4.0
 [2.0.0]: https://github.com/tox-dev/PyVenvManage/compare/1.4.0...v2.0.0
 [2.0.1]: https://github.com/tox-dev/PyVenvManage/compare/v2.0.0...v2.0.1
