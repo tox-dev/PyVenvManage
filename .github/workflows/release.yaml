@@ -1,12 +1,40 @@
 name: Release
 on:
-  release:
-    types: [released]
+  push:
+    tags: ["v*"]
 permissions:
   contents: read
 jobs:
+  notes:
+    name: Validate release notes
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          python-version: "3.15"
+          enable-cache: false
+      - name: Install locked release tools
+        run: |
+          uv venv --python 3.15 "$RUNNER_TEMP/release-tools"
+          uv pip sync --preview-features pylock --python "$RUNNER_TEMP/release-tools/bin/python" --group release pylock.toml
+          echo "$RUNNER_TEMP/release-tools/bin" >>"$GITHUB_PATH"
+      - uses: tox-dev/github-workflows/render-release-notes@5e11f2254a4dcb7102747d312ad7db48a2e9b0cb
+        with:
+          tag: ${{ github.ref_name }}
+          changelog: CHANGELOG.md
+          repository: ${{ github.repository }}
+          artifact-url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
+          artifact-label: JetBrains Marketplace
+          output: ${{ runner.temp }}/release-notes.md
   publish:
     name: 🚀 Publish
+    needs: notes
     runs-on: ubuntu-26.04
     permissions:
       contents: read
@@ -17,18 +45,7 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.release.tag_name }} # zizmor: ignore[artipacked]
           persist-credentials: false
-      - name: 🛡️ Require a changelog section
-        env:
-          TAG: ${{ github.event.release.tag_name }}
-        run: |
-          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
-            ! grep -Fq "## [${TAG#v}] - " CHANGELOG.md ||
-            ! grep -Fxq "pluginVersion=${TAG#v}-dev" gradle.properties; then
-            echo "::error::$TAG needs a matching changelog section and source version"
-            exit 1
-          fi
       - name: 🧹 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
@@ -43,14 +60,9 @@ jobs:
         with:
           cache-disabled: true
       - name: 🏷️ Set version from tag
-        id: version
-        run: |
-          VERSION="${GITHUB_EVENT_RELEASE_TAG_NAME}"
-          VERSION="${VERSION#v}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          sed -i "s/^pluginVersion=.*/pluginVersion=$VERSION/" gradle.properties
         env:
-          GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.ref_name }}
+        run: sed -i "s/^pluginVersion=.*/pluginVersion=${TAG#v}/" gradle.properties
       - name: 📤 Publish to JetBrains Marketplace
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
@@ -63,24 +75,59 @@ jobs:
           name: plugin-distribution
           path: build/distributions/*
           if-no-files-found: error
-  github-artifact:
+  github-release:
     needs: publish
     runs-on: ubuntu-26.04
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          python-version: "3.15"
+          enable-cache: false
+      - name: Install locked release tools
+        run: |
+          uv venv --python 3.15 "$RUNNER_TEMP/release-tools"
+          uv pip sync --preview-features pylock --python "$RUNNER_TEMP/release-tools/bin/python" --group release pylock.toml
+          echo "$RUNNER_TEMP/release-tools/bin" >>"$GITHUB_PATH"
+      - name: Fetch contributor metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          previous=$(git tag --list | release-creator tags "$TAG" --previous)
+          if [[ -n "$previous" ]]; then
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+              -f tag_name="$TAG" -f previous_tag_name="$previous" --jq .body >"$RUNNER_TEMP/generated-notes.md"
+          else
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+              -f tag_name="$TAG" --jq .body >"$RUNNER_TEMP/generated-notes.md"
+          fi
+      - uses: tox-dev/github-workflows/render-release-notes@5e11f2254a4dcb7102747d312ad7db48a2e9b0cb
+        with:
+          tag: ${{ github.ref_name }}
+          changelog: CHANGELOG.md
+          repository: ${{ github.repository }}
+          artifact-url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
+          artifact-label: JetBrains Marketplace
+          generated-notes: ${{ runner.temp }}/generated-notes.md
+          output: ${{ runner.temp }}/release-notes.md
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: plugin-distribution
           path: dist/
-      - name: 📎 Upload release artifact
+      - name: Publish GitHub Release with plugin ZIP
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$TAG" dist/*
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" dist/* --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md"
   post-release:
     name: 📝 Post-release version bump
-    needs: github-artifact
+    needs: github-release
     runs-on: ubuntu-26.04
     permissions:
       contents: read
@@ -99,14 +146,13 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.release.tag_name }}
           token: ${{ steps.token.outputs.token }}
           persist-credentials: true # zizmor: ignore[artipacked] this job pushes its post-release branch
       - name: 📝 Create post-release PR
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           APP_SLUG: ${{ steps.token.outputs.app-slug }}
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           version="${TAG#v}"

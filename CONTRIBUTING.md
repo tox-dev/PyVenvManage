@@ -78,6 +78,13 @@ pass with full coverage. If you modified action classes, run UI tests for end-to
 Follow conventional commit style: use `feat:` for new features, `fix:` for bug fixes, `refactor:` for code refactoring,
 `test:` for test changes, `docs:` for documentation, and `chore:` for maintenance tasks.
 
+For a user-visible change, add a Markdown file named `changelog.d/+short-name.<category>.md`. Use `feature` for a new
+capability, `change` for changed behavior, `bugfix` for a fix, and `doc` for user documentation. `security`,
+`performance`, `deprecation`, `removal`, `breaking`, and `packaging` are available when they describe a user-visible
+result. Put separate changes in separate files. The release job adds the squash PR link and human author credit after
+merge. For maintenance without a user-visible result, apply `skip news` to the PR; bot PRs without fragments receive it
+automatically.
+
 ## Troubleshooting
 
 If UI tests timeout or fail to connect, ensure no other IDE instance is using port 8082. Kill any running IDE processes
@@ -90,17 +97,18 @@ code requires IntelliJ platform services that can't be mocked, add UI test cover
 
 ## Releasing
 
-The plugin version is defined in `gradle.properties` as `pluginVersion`. To release, update the version in that file and
-merge your PR to main. The CI automatically creates a draft release on GitHub with the version from `gradle.properties`.
+Run **Prepare release** on `main` with `auto` after merging the intended changelog fragments. The job chooses a major
+version for a `breaking` fragment, a minor version for a `feature` fragment, and a patch version for other categories.
+It adds the release section to `CHANGELOG.md`, runs `prek`, and pushes the release commit and `v`-prefixed tag using the
+repository-scoped App. The dispatch does not ask for a version number.
 
-Review the draft release on the [Releases page](https://github.com/pyvenvmanage/PyVenvManage/releases) and edit the
-release notes if needed. Click "Publish release" (not pre-release) to trigger the release workflow, which builds and
-signs the plugin, publishes to [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2),
-uploads the plugin ZIP to the GitHub release, and creates a PR to update CHANGELOG.md. Merge that changelog PR after the
-release workflow completes.
+The tag workflow checks the changelog, sets `pluginVersion` for that build, signs the plugin, and publishes it to the
+[JetBrains Marketplace](https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2). Once Marketplace publication
+succeeds, it creates the GitHub Release with the plugin ZIP and changelog-based notes. The final job opens a PR for the
+next development version in `gradle.properties`.
 
 The release workflow requires repository secrets configured by maintainers: `PUBLISH_TOKEN` for JetBrains Marketplace
 upload, and `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, and `PRIVATE_KEY_PASSWORD` for plugin signing.
 
-Follow [semantic versioning](https://semver.org/): increment MAJOR for breaking changes, MINOR for new backward
-compatible features, and PATCH for backward compatible bug fixes.
+The release App key is stored in the branch-restricted `release-auth` environment. The Marketplace and signing secrets
+remain in the `release` environment.
