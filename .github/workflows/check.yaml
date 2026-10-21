@@ -193,5 +193,8 @@ jobs:
     steps:
       - env:
           NEEDS_JSON: ${{ toJSON(needs) }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
-          jq -e 'all(to_entries[]; .value.result == "success" or (.key == "changelog" and .value.result == "skipped"))' <<< "$NEEDS_JSON"
+          jq -e --argjson is_pr "$IS_PR" \
+            'all(to_entries[]; .value.result == "success" or (.key == "changelog" and ($is_pr | not) and .value.result == "skipped"))' \
+            <<< "$NEEDS_JSON"
