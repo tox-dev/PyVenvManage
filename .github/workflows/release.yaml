@@ -457,6 +457,7 @@ jobs:
           base-commit: ${{ needs.post-release-prepare.outputs.base-commit }}
           branch: ${{ needs.post-release-prepare.outputs.branch }}
           title: Bump version to ${{ needs.post-release-prepare.outputs.next-version }}
+          commit-message: Bump version to ${{ needs.post-release-prepare.outputs.next-version }} after ${{ github.ref_name }}
           body-file: ${{ runner.temp }}/post-release/body.md
           paths-file: ${{ runner.temp }}/post-release/paths.tsv
           allowed-paths: gradle.properties

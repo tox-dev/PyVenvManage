@@ -166,6 +166,7 @@ jobs:
           base-commit: ${{ needs.prepare-pr.outputs.base-commit }}
           branch: ${{ needs.prepare-pr.outputs.branch }}
           title: Bump mise-managed JDKs
+          commit-message: Bump mise-managed JDKs
           body-file: ${{ runner.temp }}/mise-pr/body.md
           paths-file: ${{ runner.temp }}/mise-pr/paths.tsv
           allowed-paths: mise.lock
