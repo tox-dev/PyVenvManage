@@ -38,11 +38,11 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: Install locked release tools
-        run: |
-          uv venv --python 3.15 "$RUNNER_TEMP/release-tools"
-          uv pip sync --preview-features pylock \
-            --python "$RUNNER_TEMP/release-tools/bin/python" --group release pylock.toml
-          echo "$RUNNER_TEMP/release-tools/bin" >>"$GITHUB_PATH"
+        uses: tox-dev/github-workflows/install-locked-tools@24e7c78489b6e2adb7b8f881761a5c2dbfe03fee
+        with:
+          venv: ${{ runner.temp }}/release-tools
+      - name: Add installed tools to PATH
+        run: echo "$RUNNER_TEMP/release-tools/bin" >>"$GITHUB_PATH"
       - name: Check updated source
         run: prek run --all-files
       - name: Check the lockfile
@@ -155,7 +155,7 @@ jobs:
         with:
           artifact-ids: ${{ needs.prepare-pr.outputs.artifact-id }}
           path: ${{ runner.temp }}/mise-pr
-      - uses: tox-dev/github-workflows/publish-post-release-pr@2b4ed19340a7ec97020f4fd0a403531845c49356
+      - uses: tox-dev/github-workflows/publish-post-release-pr@24e7c78489b6e2adb7b8f881761a5c2dbfe03fee
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         with:
