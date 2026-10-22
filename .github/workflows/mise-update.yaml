@@ -38,7 +38,7 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@a040f8eb1c335676f3f97db2010a1a39a3cea1ac
+        uses: tox-dev/github-workflows/install-locked-tools@33db207c963ad07b8d2bff4099143593fd4100b2
         with:
           venv: ${{ runner.temp }}/release-tools
       - name: Add installed tools to PATH
@@ -155,7 +155,7 @@ jobs:
         with:
           artifact-ids: ${{ needs.prepare-pr.outputs.artifact-id }}
           path: ${{ runner.temp }}/mise-pr
-      - uses: tox-dev/github-workflows/publish-post-release-pr@a040f8eb1c335676f3f97db2010a1a39a3cea1ac
+      - uses: tox-dev/github-workflows/publish-post-release-pr@33db207c963ad07b8d2bff4099143593fd4100b2
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         with:
