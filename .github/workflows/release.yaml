@@ -26,7 +26,7 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@24e7c78489b6e2adb7b8f881761a5c2dbfe03fee
+        uses: tox-dev/github-workflows/install-locked-tools@961281cba49418a682b2bb123ae4a1c4d22f74ff
         with:
           venv: ${{ runner.temp }}/release-tools
       - name: Add installed tools to PATH
@@ -84,7 +84,7 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@24e7c78489b6e2adb7b8f881761a5c2dbfe03fee
+        uses: tox-dev/github-workflows/install-locked-tools@961281cba49418a682b2bb123ae4a1c4d22f74ff
         with:
           venv: ${{ runner.temp }}/release-tools
       - name: Add installed tools to PATH
@@ -93,7 +93,7 @@ jobs:
         with:
           name: generated-notes
           path: ${{ runner.temp }}/generated-notes
-      - uses: tox-dev/github-workflows/render-release-notes@24e7c78489b6e2adb7b8f881761a5c2dbfe03fee
+      - uses: tox-dev/github-workflows/render-release-notes@961281cba49418a682b2bb123ae4a1c4d22f74ff
         with:
           tag: ${{ github.ref_name }}
           changelog: CHANGELOG.md
@@ -198,7 +198,7 @@ jobs:
           echo "path=${archives[0]}" >>"$GITHUB_OUTPUT"
       - name: Sign verified plugin ZIP
         id: signed
-        uses: tox-dev/github-workflows/sign-jetbrains-plugin@24e7c78489b6e2adb7b8f881761a5c2dbfe03fee
+        uses: tox-dev/github-workflows/sign-jetbrains-plugin@961281cba49418a682b2bb123ae4a1c4d22f74ff
         with:
           archive: ${{ steps.archive.outputs.path }}
           sha256: ${{ needs.build-unsigned.outputs.archive_sha }}
@@ -240,7 +240,7 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@24e7c78489b6e2adb7b8f881761a5c2dbfe03fee
+        uses: tox-dev/github-workflows/install-locked-tools@961281cba49418a682b2bb123ae4a1c4d22f74ff
         with:
           venv: ${{ runner.temp }}/release-tools
       - name: Add installed tools to PATH
@@ -309,7 +309,7 @@ jobs:
           echo "name=${channel%%.*}" >>"$GITHUB_OUTPUT"
       - name: Upload signed ZIP
         if: needs.marketplace-check.outputs.publish == 'true'
-        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@24e7c78489b6e2adb7b8f881761a5c2dbfe03fee
+        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@961281cba49418a682b2bb123ae4a1c4d22f74ff
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         with:
@@ -341,7 +341,7 @@ jobs:
           unzip -tq "${archives[0]}" >/dev/null
           read -r digest _ < <(sha256sum "${archives[0]}")
           test "$digest" = "$EXPECTED_SHA"
-      - uses: tox-dev/github-workflows/publish-github-release@24e7c78489b6e2adb7b8f881761a5c2dbfe03fee
+      - uses: tox-dev/github-workflows/publish-github-release@961281cba49418a682b2bb123ae4a1c4d22f74ff
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -444,7 +444,7 @@ jobs:
         with:
           artifact-ids: ${{ needs.post-release-prepare.outputs.artifact-id }}
           path: ${{ runner.temp }}/post-release
-      - uses: tox-dev/github-workflows/publish-post-release-pr@24e7c78489b6e2adb7b8f881761a5c2dbfe03fee
+      - uses: tox-dev/github-workflows/publish-post-release-pr@961281cba49418a682b2bb123ae4a1c4d22f74ff
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         with:
