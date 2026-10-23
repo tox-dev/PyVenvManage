@@ -42,8 +42,6 @@ jobs:
         with:
           groups: release-check
           venv: ${{ runner.temp }}/release-tools
-      - name: Add installed tools to PATH
-        run: echo "$RUNNER_TEMP/release-tools/bin" >>"$GITHUB_PATH"
       - name: Check updated source
         run: prek run --all-files
       - name: Check the lockfile
