@@ -14,7 +14,7 @@ jobs:
     permissions:
       contents: read
     outputs:
-      previous: ${{ steps.previous.outputs.tag }}
+      previous: ${{ steps.previous.outputs.previous }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -26,7 +26,7 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@fcba1cc52c8e8bbb8c3305ee5e4bc454b9ab0c50
+        uses: tox-dev/github-workflows/install-locked-tools@cadf58a0dcc5d0c7853b248ab7c2b19bb93675d1
         with:
           groups: release-validate
           venv: ${{ runner.temp }}/release-tools
@@ -36,9 +36,9 @@ jobs:
         run: prek run --all-files
       - name: Select previous release tag
         id: previous
-        env:
-          TAG: ${{ github.ref_name }}
-        run: echo "tag=$(git tag --list | release-creator tags "$TAG" --previous)" >>"$GITHUB_OUTPUT"
+        uses: tox-dev/github-workflows/select-previous-tag@cadf58a0dcc5d0c7853b248ab7c2b19bb93675d1
+        with:
+          tag: ${{ github.ref_name }}
   contributors:
     name: Fetch contributor metadata
     needs: notes
@@ -85,7 +85,7 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@fcba1cc52c8e8bbb8c3305ee5e4bc454b9ab0c50
+        uses: tox-dev/github-workflows/install-locked-tools@cadf58a0dcc5d0c7853b248ab7c2b19bb93675d1
         with:
           groups: release-notes
           venv: ${{ runner.temp }}/release-tools
@@ -95,11 +95,10 @@ jobs:
         with:
           name: generated-notes
           path: ${{ runner.temp }}/generated-notes
-      - uses: tox-dev/github-workflows/render-release-notes@fcba1cc52c8e8bbb8c3305ee5e4bc454b9ab0c50
+      - uses: tox-dev/github-workflows/render-release-notes@cadf58a0dcc5d0c7853b248ab7c2b19bb93675d1
         with:
           tag: ${{ github.ref_name }}
           changelog: CHANGELOG.md
-          repository: ${{ github.repository }}
           artifact-url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
           artifact-label: JetBrains Marketplace
           generated-notes: ${{ runner.temp }}/generated-notes/generated-notes.md
@@ -200,7 +199,7 @@ jobs:
           echo "path=${archives[0]}" >>"$GITHUB_OUTPUT"
       - name: Sign verified plugin ZIP
         id: signed
-        uses: tox-dev/github-workflows/sign-jetbrains-plugin@fcba1cc52c8e8bbb8c3305ee5e4bc454b9ab0c50
+        uses: tox-dev/github-workflows/sign-jetbrains-plugin@cadf58a0dcc5d0c7853b248ab7c2b19bb93675d1
         with:
           archive: ${{ steps.archive.outputs.path }}
           sha256: ${{ needs.build-unsigned.outputs.archive_sha }}
@@ -242,7 +241,7 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@fcba1cc52c8e8bbb8c3305ee5e4bc454b9ab0c50
+        uses: tox-dev/github-workflows/install-locked-tools@cadf58a0dcc5d0c7853b248ab7c2b19bb93675d1
         with:
           groups: release-notes
           venv: ${{ runner.temp }}/release-tools
@@ -312,7 +311,7 @@ jobs:
           echo "name=${channel%%.*}" >>"$GITHUB_OUTPUT"
       - name: Upload signed ZIP
         if: needs.marketplace-check.outputs.publish == 'true'
-        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@fcba1cc52c8e8bbb8c3305ee5e4bc454b9ab0c50
+        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@cadf58a0dcc5d0c7853b248ab7c2b19bb93675d1
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         with:
@@ -344,11 +343,10 @@ jobs:
           unzip -tq "${archives[0]}" >/dev/null
           read -r digest _ < <(sha256sum "${archives[0]}")
           test "$digest" = "$EXPECTED_SHA"
-      - uses: tox-dev/github-workflows/publish-github-release@fcba1cc52c8e8bbb8c3305ee5e4bc454b9ab0c50
+      - uses: tox-dev/github-workflows/publish-github-release@cadf58a0dcc5d0c7853b248ab7c2b19bb93675d1
         env:
           GH_TOKEN: ${{ github.token }}
         with:
-          repository: ${{ github.repository }}
           tag: ${{ github.ref_name }}
           commit: ${{ github.sha }}
           title: ${{ github.ref_name }}
@@ -447,13 +445,11 @@ jobs:
         with:
           artifact-ids: ${{ needs.post-release-prepare.outputs.artifact-id }}
           path: ${{ runner.temp }}/post-release
-      - uses: tox-dev/github-workflows/publish-post-release-pr@fcba1cc52c8e8bbb8c3305ee5e4bc454b9ab0c50
+      - uses: tox-dev/github-workflows/publish-post-release-pr@cadf58a0dcc5d0c7853b248ab7c2b19bb93675d1
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         with:
-          repository: ${{ github.repository }}
           app-slug: ${{ steps.token.outputs.app-slug }}
-          base: main
           base-commit: ${{ needs.post-release-prepare.outputs.base-commit }}
           branch: ${{ needs.post-release-prepare.outputs.branch }}
           title: Bump version to ${{ needs.post-release-prepare.outputs.next-version }}
