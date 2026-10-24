@@ -26,7 +26,7 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@1b7d58c3e744b505215e1cb11697a80737b0e94d
+        uses: tox-dev/github-workflows/install-locked-tools@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
         with:
           groups: release-validate
           venv: ${{ runner.temp }}/release-tools
@@ -34,7 +34,7 @@ jobs:
         run: prek run --all-files
       - name: Select previous release tag
         id: previous
-        uses: tox-dev/github-workflows/select-previous-tag@1b7d58c3e744b505215e1cb11697a80737b0e94d
+        uses: tox-dev/github-workflows/select-previous-tag@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
         with:
           tag: ${{ github.ref_name }}
   contributors:
@@ -83,7 +83,7 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@1b7d58c3e744b505215e1cb11697a80737b0e94d
+        uses: tox-dev/github-workflows/install-locked-tools@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
         with:
           groups: release-notes
           venv: ${{ runner.temp }}/release-tools
@@ -91,7 +91,7 @@ jobs:
         with:
           name: generated-notes
           path: ${{ runner.temp }}/generated-notes
-      - uses: tox-dev/github-workflows/render-release-notes@1b7d58c3e744b505215e1cb11697a80737b0e94d
+      - uses: tox-dev/github-workflows/render-release-notes@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
         with:
           tag: ${{ github.ref_name }}
           previous: ${{ needs.notes.outputs.previous }}
@@ -196,7 +196,7 @@ jobs:
           echo "path=${archives[0]}" >>"$GITHUB_OUTPUT"
       - name: Sign verified plugin ZIP
         id: signed
-        uses: tox-dev/github-workflows/sign-jetbrains-plugin@1b7d58c3e744b505215e1cb11697a80737b0e94d
+        uses: tox-dev/github-workflows/sign-jetbrains-plugin@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
         with:
           archive: ${{ steps.archive.outputs.path }}
           sha256: ${{ needs.build-unsigned.outputs.archive_sha }}
@@ -238,7 +238,7 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@1b7d58c3e744b505215e1cb11697a80737b0e94d
+        uses: tox-dev/github-workflows/install-locked-tools@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
         with:
           groups: release-notes
           venv: ${{ runner.temp }}/release-tools
@@ -306,7 +306,7 @@ jobs:
           echo "name=${channel%%.*}" >>"$GITHUB_OUTPUT"
       - name: Upload signed ZIP
         if: needs.marketplace-check.outputs.publish == 'true'
-        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@1b7d58c3e744b505215e1cb11697a80737b0e94d
+        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         with:
@@ -338,7 +338,7 @@ jobs:
           unzip -tq "${archives[0]}" >/dev/null
           read -r digest _ < <(sha256sum "${archives[0]}")
           test "$digest" = "$EXPECTED_SHA"
-      - uses: tox-dev/github-workflows/publish-github-release@1b7d58c3e744b505215e1cb11697a80737b0e94d
+      - uses: tox-dev/github-workflows/publish-github-release@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -440,7 +440,7 @@ jobs:
         with:
           artifact-ids: ${{ needs.post-release-prepare.outputs.artifact-id }}
           path: ${{ runner.temp }}/post-release
-      - uses: tox-dev/github-workflows/publish-post-release-pr@1b7d58c3e744b505215e1cb11697a80737b0e94d
+      - uses: tox-dev/github-workflows/publish-post-release-pr@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         with:

@@ -6,10 +6,9 @@ dependencies = []
 
 [dependency-groups]
 build = []
-lock-tools = [ "nab==0.0.22" ]
 release = [
   "prek>=0.5",
-  "release-creator>=0.6.5",
+  "release-creator>=1.0.0",
   "towncrier>=26.9",
 ]
 release-check = [
@@ -17,23 +16,23 @@ release-check = [
 ]
 
 release-notes = [
-  "release-creator>=0.6.5",
+  "release-creator>=1.0.0",
 ]
 
 release-news = [
-  "release-creator>=0.6.5",
+  "release-creator>=1.0.0",
   "towncrier>=26.9",
 ]
 
 release-prepare = [
   "prek>=0.5",
-  "release-creator>=0.6.5",
+  "release-creator>=1.0.0",
   "towncrier>=26.9",
 ]
 
 release-validate = [
   "prek>=0.5",
-  "release-creator>=0.6.5",
+  "release-creator>=1.0.0",
 ]
 
 
@@ -77,4 +76,4 @@ match = [ "nab", "nab-index", "nab-markersets", "nab-project", "nab-provider", "
 uploaded-prior-to = "2026-10-18T05:45:09Z"
 
 [tool.nab.packages.release-creator]
-uploaded-prior-to = "2026-10-23T19:54:50Z"
+uploaded-prior-to = "2026-10-24T06:07:46Z"
