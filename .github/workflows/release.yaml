@@ -1,34 +1,123 @@
 name: Release
 on:
-  release:
-    types: [released]
+  push:
+    tags: ["v*"]
 permissions:
   contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
-  publish:
-    name: 🚀 Publish
+  notes:
+    name: Validate tagged source
     runs-on: ubuntu-26.04
     permissions:
       contents: read
-    environment:
-      name: release
-      url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
+    outputs:
+      previous: ${{ steps.previous.outputs.previous }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: latest-known
+          python-version: "3.15"
+          enable-cache: false
+      - name: Install locked release tools
+        uses: tox-dev/github-workflows/install-locked-tools@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
+        with:
+          groups: release-validate
+          venv: ${{ runner.temp }}/release-tools
+      - name: Check tagged source
+        run: prek run --all-files
+      - name: Select previous release tag
+        id: previous
+        uses: tox-dev/github-workflows/select-previous-tag@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
+        with:
+          tag: ${{ github.ref_name }}
+  contributors:
+    name: Fetch contributor metadata
+    needs: notes
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    steps:
+      - name: Generate notes since previous release
+        if: needs.notes.outputs.previous != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          PREVIOUS: ${{ needs.notes.outputs.previous }}
+        run: |
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+            -f tag_name="$TAG" -f previous_tag_name="$PREVIOUS" \
+            --jq .body >"$RUNNER_TEMP/generated-notes.md"
+      - name: Generate initial release notes
+        if: needs.notes.outputs.previous == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+            -f tag_name="$TAG" --jq .body >"$RUNNER_TEMP/generated-notes.md"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: generated-notes
+          path: ${{ runner.temp }}/generated-notes.md
+          if-no-files-found: error
+  render-notes:
+    name: Render GitHub notes
+    needs: [contributors, notes]
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: latest-known
+          python-version: "3.15"
+          enable-cache: false
+      - name: Install locked release tools
+        uses: tox-dev/github-workflows/install-locked-tools@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
+        with:
+          groups: release-notes
+          venv: ${{ runner.temp }}/release-tools
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: generated-notes
+          path: ${{ runner.temp }}/generated-notes
+      - uses: tox-dev/github-workflows/render-release-notes@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
+        with:
+          tag: ${{ github.ref_name }}
+          previous: ${{ needs.notes.outputs.previous }}
+          changelog: CHANGELOG.md
+          artifact-url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
+          artifact-label: JetBrains Marketplace
+          generated-notes: ${{ runner.temp }}/generated-notes/generated-notes.md
+          output: ${{ runner.temp }}/release-notes.md
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-notes
+          path: ${{ runner.temp }}/release-notes.md
+          if-no-files-found: error
+  build-unsigned:
+    name: Build plugin ZIP
+    needs: notes
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    outputs:
+      archive_sha: ${{ steps.digest.outputs.sha }}
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.release.tag_name }} # zizmor: ignore[artipacked]
           persist-credentials: false
-      - name: 🛡️ Require a changelog section
-        env:
-          TAG: ${{ github.event.release.tag_name }}
-        run: |
-          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
-            ! grep -Fq "## [${TAG#v}] - " CHANGELOG.md ||
-            ! grep -Fxq "pluginVersion=${TAG#v}-dev" gradle.properties; then
-            echo "::error::$TAG needs a matching changelog section and source version"
-            exit 1
-          fi
       - name: 🧹 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
@@ -39,48 +128,299 @@ jobs:
         with:
           cache: false
       - name: 🐘 Set up Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0 # zizmor: ignore[cache-poisoning]
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # zizmor: ignore[cache-poisoning]
         with:
           cache-disabled: true
       - name: 🏷️ Set version from tag
-        id: version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: sed -i "s/^pluginVersion=.*/pluginVersion=${TAG#v}/" gradle.properties
+      - name: Build and check plugin ZIP
+        run: ./gradlew buildPlugin verifyPluginStructure
+      - name: Select unsigned ZIP
+        id: archive
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
-          VERSION="${GITHUB_EVENT_RELEASE_TAG_NAME}"
-          VERSION="${VERSION#v}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          sed -i "s/^pluginVersion=.*/pluginVersion=$VERSION/" gradle.properties
+          shopt -s nullglob
+          archives=(build/distributions/*-"${TAG#v}".zip)
+          test "${#archives[@]}" -eq 1
+          echo "path=${archives[0]}" >>"$GITHUB_OUTPUT"
+      - name: Check unsigned ZIP and plugin version
         env:
-          GITHUB_EVENT_RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
-      - name: 📤 Publish to JetBrains Marketplace
+          TAG: ${{ github.ref_name }}
+          ARCHIVE: ${{ steps.archive.outputs.path }}
+        run: |
+          set -euo pipefail
+          test -f "$ARCHIVE"
+          test ! -L "$ARCHIVE"
+          unzip -tq "$ARCHIVE" >/dev/null
+          unzip -p "$ARCHIVE" "*/lib/*-${TAG#v}.jar" >"$RUNNER_TEMP/plugin.jar"
+          unzip -p "$RUNNER_TEMP/plugin.jar" META-INF/plugin.xml >"$RUNNER_TEMP/plugin.xml"
+          grep -Fq "<version>${TAG#v}</version>" "$RUNNER_TEMP/plugin.xml"
+      - name: Record unsigned ZIP digest
+        id: digest
         env:
-          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
-        run: ./gradlew publishPlugin
+          ARCHIVE: ${{ steps.archive.outputs.path }}
+        run: |
+          read -r digest _ < <(sha256sum "$ARCHIVE")
+          echo "sha=$digest" >>"$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unsigned-plugin
+          path: ${{ steps.archive.outputs.path }}
+          if-no-files-found: error
+  sign:
+    name: Sign plugin ZIP
+    needs: build-unsigned
+    runs-on: ubuntu-26.04
+    permissions: {}
+    environment:
+      name: release
+      url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
+    outputs:
+      archive_sha: ${{ steps.signed.outputs.sha256 }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: unsigned-plugin
+          path: dist/
+      - name: Select unsigned ZIP
+        id: archive
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          shopt -s nullglob
+          archives=(dist/*-"${TAG#v}".zip)
+          test "${#archives[@]}" -eq 1
+          echo "path=${archives[0]}" >>"$GITHUB_OUTPUT"
+      - name: Sign verified plugin ZIP
+        id: signed
+        uses: tox-dev/github-workflows/sign-jetbrains-plugin@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
+        with:
+          archive: ${{ steps.archive.outputs.path }}
+          sha256: ${{ needs.build-unsigned.outputs.archive_sha }}
+          certificate-chain: ${{ secrets.CERTIFICATE_CHAIN }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+          private-key-password: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+      - name: Check signed ZIP and plugin version
+        env:
+          TAG: ${{ github.ref_name }}
+          ARCHIVE: ${{ steps.signed.outputs.archive }}
+        run: |
+          set -euo pipefail
+          test -f "$ARCHIVE"
+          test ! -L "$ARCHIVE"
+          unzip -tq "$ARCHIVE" >/dev/null
+          unzip -p "$ARCHIVE" "*/lib/*-${TAG#v}.jar" >"$RUNNER_TEMP/plugin.jar"
+          unzip -p "$RUNNER_TEMP/plugin.jar" META-INF/plugin.xml >"$RUNNER_TEMP/plugin.xml"
+          grep -Fq "<version>${TAG#v}</version>" "$RUNNER_TEMP/plugin.xml"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: plugin-distribution
-          path: build/distributions/*
+          path: ${{ steps.signed.outputs.archive }}
           if-no-files-found: error
-  github-artifact:
-    needs: publish
+  marketplace-check:
+    name: Check Marketplace version
+    needs: sign
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    outputs:
+      publish: ${{ steps.marketplace.outputs.publish }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: latest-known
+          python-version: "3.15"
+          enable-cache: false
+      - name: Install locked release tools
+        uses: tox-dev/github-workflows/install-locked-tools@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
+        with:
+          groups: release-notes
+          venv: ${{ runner.temp }}/release-tools
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: plugin-distribution
+          path: dist/
+      - name: Check signed ZIP artifact
+        id: archive
+        run: |
+          shopt -s nullglob
+          archives=(dist/*-signed.zip)
+          test "${#archives[@]}" -eq 1
+          echo "path=${archives[0]}" >>"$GITHUB_OUTPUT"
+      - name: Verify signed ZIP artifact
+        env:
+          EXPECTED_SHA: ${{ needs.sign.outputs.archive_sha }}
+          ARCHIVE: ${{ steps.archive.outputs.path }}
+        run: |
+          echo "$EXPECTED_SHA  $ARCHIVE" | sha256sum --check
+          unzip -tq "$ARCHIVE" >/dev/null
+      - name: Compare Marketplace version
+        id: marketplace
+        env:
+          TAG: ${{ github.ref_name }}
+          ARCHIVE: ${{ steps.archive.outputs.path }}
+        run: |
+          release-creator marketplace --plugin-id com.github.pyvenvmanage.pyvenv \
+            --version "${TAG#v}" --archive "$ARCHIVE" --github-output "$GITHUB_OUTPUT"
+      - name: Check Marketplace decision
+        env:
+          PUBLISH: ${{ steps.marketplace.outputs.publish }}
+        run: test "$PUBLISH" = true || test "$PUBLISH" = false
+  marketplace-publish:
+    name: Publish to JetBrains Marketplace
+    needs: [sign, marketplace-check]
+    runs-on: ubuntu-26.04
+    permissions: {}
+    environment:
+      name: release
+      url: https://plugins.jetbrains.com/plugin/20536-pyvenv-manage-2
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: needs.marketplace-check.outputs.publish == 'true'
+        with:
+          name: plugin-distribution
+          path: dist/
+      - name: Select signed ZIP
+        id: archive
+        if: needs.marketplace-check.outputs.publish == 'true'
+        run: |
+          shopt -s nullglob
+          archives=(dist/*-signed.zip)
+          test "${#archives[@]}" -eq 1
+          echo "path=${archives[0]}" >>"$GITHUB_OUTPUT"
+      - name: Select release channel
+        id: channel
+        if: needs.marketplace-check.outputs.publish == 'true'
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          channel="${version#*-}"
+          if [[ "$channel" == "$version" ]]; then channel=''; fi
+          echo "name=${channel%%.*}" >>"$GITHUB_OUTPUT"
+      - name: Upload signed ZIP
+        if: needs.marketplace-check.outputs.publish == 'true'
+        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        with:
+          archive: ${{ steps.archive.outputs.path }}
+          sha256: ${{ needs.sign.outputs.archive_sha }}
+          plugin-id: "20536"
+          channel: ${{ steps.channel.outputs.name }}
+  github-release:
+    needs: [sign, marketplace-publish, render-notes]
     runs-on: ubuntu-26.04
     permissions:
       contents: write
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
+          name: release-notes
+          path: ${{ runner.temp }}/release-notes
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
           name: plugin-distribution
           path: dist/
-      - name: 📎 Upload release artifact
+      - name: Check downloaded plugin ZIP
+        env:
+          EXPECTED_SHA: ${{ needs.sign.outputs.archive_sha }}
+        run: |
+          shopt -s nullglob
+          archives=(dist/*-signed.zip)
+          test "${#archives[@]}" -eq 1
+          unzip -tq "${archives[0]}" >/dev/null
+          read -r digest _ < <(sha256sum "${archives[0]}")
+          test "$digest" = "$EXPECTED_SHA"
+      - uses: tox-dev/github-workflows/publish-github-release@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$TAG" dist/*
+        with:
+          tag: ${{ github.ref_name }}
+          commit: ${{ github.sha }}
+          title: ${{ github.ref_name }}
+          notes-file: ${{ runner.temp }}/release-notes/release-notes.md
+          assets-directory: dist
+  post-release-prepare:
+    name: Prepare post-release version bump
+    needs: github-release
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    outputs:
+      base-commit: ${{ steps.change.outputs.base-commit }}
+      candidate-commit: ${{ steps.change.outputs.candidate-commit }}
+      branch: ${{ steps.version.outputs.branch }}
+      next-version: ${{ steps.version.outputs.next-version }}
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Select the next version
+        id: version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version="${TAG#v}"
+          IFS='.' read -r major minor patch extra <<<"$version"
+          test -z "${extra:-}"
+          for part in "$major" "$minor" "$patch"; do
+            case "$part" in '' | *[!0-9]*) exit 1 ;; esac
+          done
+          echo "next-version=$major.$minor.$((patch + 1))-dev" >>"$GITHUB_OUTPUT"
+          echo "branch=post-release-$TAG" >>"$GITHUB_OUTPUT"
+      - name: Resolve the release App author
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          slug=tox-dev-pyvenvmanage-release
+          app_user_id=$(gh api "/users/${slug}[bot]" --jq .id)
+          git config user.name "${slug}[bot]"
+          git config user.email "${app_user_id}+${slug}[bot]@users.noreply.github.com"
+      - name: Prepare the exact version change
+        id: change
+        env:
+          TAG: ${{ github.ref_name }}
+          NEXT_VERSION: ${{ steps.version.outputs.next-version }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/post-release"
+          base_commit=$(git rev-parse HEAD)
+          current_version=$(sed -n 's/^pluginVersion=//p' gradle.properties)
+          case "$current_version" in "${TAG#v}" | "${TAG#v}-dev" | "$NEXT_VERSION") ;; *) exit 1 ;; esac
+          sed -i "s/^pluginVersion=.*/pluginVersion=$NEXT_VERSION/" gradle.properties
+          git add gradle.properties
+          printf 'gradle.properties\t%s\n' "$(git rev-parse :gradle.properties)" >"$RUNNER_TEMP/post-release/paths.tsv"
+          printf 'Set the next development version after %s.\n' "$TAG" >"$RUNNER_TEMP/post-release/body.md"
+          candidate_commit=
+          if ! git diff --cached --quiet; then
+            git commit -m "Bump version to $NEXT_VERSION after $TAG"
+            candidate_commit=$(git rev-parse HEAD)
+            git branch release-candidate HEAD
+            git bundle create "$RUNNER_TEMP/post-release/candidate.bundle" refs/heads/release-candidate
+          fi
+          echo "base-commit=$base_commit" >>"$GITHUB_OUTPUT"
+          echo "candidate-commit=$candidate_commit" >>"$GITHUB_OUTPUT"
+      - id: upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: post-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/post-release/*
+          if-no-files-found: error
   post-release:
     name: 📝 Post-release version bump
-    needs: github-artifact
+    needs: post-release-prepare
     runs-on: ubuntu-26.04
     permissions:
       contents: read
@@ -96,34 +436,21 @@ jobs:
           permission-contents: write
           permission-pull-requests: write
           permission-issues: write
-      - name: 📥 Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          ref: ${{ github.event.release.tag_name }}
-          token: ${{ steps.token.outputs.token }}
-          persist-credentials: true # zizmor: ignore[artipacked] this job pushes its post-release branch
-      - name: 📝 Create post-release PR
+          artifact-ids: ${{ needs.post-release-prepare.outputs.artifact-id }}
+          path: ${{ runner.temp }}/post-release
+      - uses: tox-dev/github-workflows/publish-post-release-pr@e2d5e308194a31710039f3237b7157431c0e38b5 # v2.0.0
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
-          APP_SLUG: ${{ steps.token.outputs.app-slug }}
-          TAG: ${{ github.event.release.tag_name }}
-        run: |
-          set -euo pipefail
-          version="${TAG#v}"
-          IFS='.' read -r major minor patch <<< "$version"
-          next_version="$major.$minor.$((patch + 1))-dev"
-          branch="post-release-$TAG"
-          app_user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
-          git config user.name "${APP_SLUG}[bot]"
-          git config user.email "${app_user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
-          git fetch origin main
-          git checkout -b "$branch" origin/main
-          sed -i "s/^pluginVersion=.*/pluginVersion=$next_version/" gradle.properties
-          git add gradle.properties
-          git commit -m "Bump version to $next_version after $TAG"
-          git push --set-upstream origin "$branch"
-          gh pr create \
-            --title "Bump version to $next_version" \
-            --body "Set the next development version after $TAG." \
-            --head "$branch" \
-            --label 'skip news'
+        with:
+          app-slug: ${{ steps.token.outputs.app-slug }}
+          base-commit: ${{ needs.post-release-prepare.outputs.base-commit }}
+          branch: ${{ needs.post-release-prepare.outputs.branch }}
+          title: Bump version to ${{ needs.post-release-prepare.outputs.next-version }}
+          commit-message: Bump version to ${{ needs.post-release-prepare.outputs.next-version }} after ${{ github.ref_name }}
+          body-file: ${{ runner.temp }}/post-release/body.md
+          paths-file: ${{ runner.temp }}/post-release/paths.tsv
+          allowed-paths: gradle.properties
+          bundle: ${{ needs.post-release-prepare.outputs.candidate-commit != '' && format('{0}/post-release/candidate.bundle', runner.temp) || '' }}
+          candidate-commit: ${{ needs.post-release-prepare.outputs.candidate-commit }}
