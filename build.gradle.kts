@@ -202,6 +202,15 @@ ktlint {
 
 changelog {
     groups.empty()
+    headerParserRegex =
+        """
+        (?x)
+        (?<version>
+          [0-9]+                 # major version
+          (?: \. [0-9]+ ){0,2}  # optional minor and patch
+          (?: rc [0-9]* )?      # historical release candidates
+        )
+        """.trimIndent().toRegex()
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
 }
 kover {

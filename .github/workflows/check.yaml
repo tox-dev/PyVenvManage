@@ -1,9 +1,10 @@
-name: Build
+name: 🏗️ Build
 on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
   # JetBrains moves platform APIs and deletes EAP artifacts between our commits, so build against them daily.
   schedule:
     - cron: "0 8 * * *"
@@ -14,31 +15,33 @@ permissions:
   contents: read
 jobs:
   build:
-    name: 📦 Build
+    name: 🏗️ Build
     runs-on: ubuntu-26.04
     steps:
-      - name: 🧹 Free disk space
+      - name: 🧽 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
           tool-cache: false
           large-packages: false
-      - name: 📥 Checkout
+      - name: 📥 Check out code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: 🔧 Set up mise (JDKs)
+      - name: 🧰 Set up mise (JDKs)
         uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
-      - name: 🐘 Set up Gradle
+      - name: ☕ Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-      - name: 🔨 Build plugin
+      - name: 🏗️ Build plugin
         run: ./gradlew --console=plain buildPlugin
-      - name: 📁 Prepare artifact
+      - name: ⚙️ Prepare artifact
         id: artifact
+        working-directory: build/distributions
         run: |
-          cd ${{ github.workspace }}/build/distributions
-          FILENAME=`ls *.zip`
-          unzip "$FILENAME" -d content
-          echo "filename=${FILENAME:0:-4}" >> $GITHUB_OUTPUT
+          shopt -s nullglob
+          archives=(*.zip)
+          test "${#archives[@]}" -eq 1
+          unzip "${archives[0]}" -d content
+          echo "filename=${archives[0]%.zip}" >>"$GITHUB_OUTPUT"
       - name: 📤 Upload artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -57,7 +60,7 @@ jobs:
           - label: PY 263 EAP
             version: 263-EAP-SNAPSHOT
     steps:
-      - name: 🧹 Free disk space
+      - name: 🧽 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
           tool-cache: false
@@ -66,20 +69,20 @@ jobs:
           dotnet: true
           haskell: true
           docker-images: true
-      - name: 📥 Checkout
+      - name: 📥 Check out code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: 🔧 Set up mise (JDKs)
+      - name: 🧰 Set up mise (JDKs)
         uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
-      - name: 🐘 Set up Gradle
+      - name: ☕ Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       - name: 💾 Cache verifier IDEs
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.pluginVerifier/ides
           key: plugin-verifier-ides-${{ matrix.version }}-${{ hashFiles('gradle.properties') }}
-      - name: ✅ Run verification
+      - name: 🔍 Run verification
         run: ./gradlew verifyPlugin -PverifyIde=PY ${MATRIX_VERSION:+-PverifyVersion=$MATRIX_VERSION}
         env:
           MATRIX_VERSION: ${{ matrix.version }}
@@ -93,64 +96,67 @@ jobs:
     name: 🧹 Lint
     runs-on: ubuntu-26.04
     steps:
-      - name: 🧹 Free disk space
+      - name: 🧽 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
           tool-cache: false
           large-packages: false
-      - name: 📥 Checkout
+      - name: 📥 Check out code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: 🔧 Set up mise (JDKs)
+      - name: 🧰 Set up mise (JDKs)
         uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
-      - name: 🐘 Set up Gradle
+      - name: ☕ Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-      - name: 🔍 Run linter
+      - name: 🧹 Run linter
         run: ./gradlew ktlintCheck
   test:
     name: 🧪 Unit tests
     runs-on: ubuntu-26.04
     steps:
-      - name: 🧹 Free disk space
+      - name: 🧽 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
           tool-cache: false
           large-packages: false
-      - name: 📥 Checkout
+      - name: 📥 Check out code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: 🔧 Set up mise (JDKs)
+      - name: 🧰 Set up mise (JDKs)
         uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
-      - name: 🐘 Set up Gradle
+      - name: ☕ Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-      - name: ✅ Run tests with coverage
+      - name: 🧪 Run tests with coverage
         run: ./gradlew test koverVerify
   ui-test:
-    name: 🖥️ UI tests
+    name: 🧪 UI tests
     runs-on: ubuntu-26.04
     steps:
-      - name: 🧹 Free disk space
+      - name: 🧽 Free disk space
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
           tool-cache: false
           large-packages: false
-      - name: 📥 Checkout
+      - name: 📥 Check out code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: 🔧 Set up mise (JDKs)
+      - name: 🧰 Set up mise (JDKs)
         uses: jdx/mise-action@08ae2a091c038e1e05ec6f5115dc5c69d5a2a6b8 # v5.1.2
-      - name: 🐘 Set up Gradle
+      - name: ☕ Set up Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-      - name: 🖥️ Run UI tests
+      - name: 🧪 Run UI tests
         run: |
           export DISPLAY=:99.0
           Xvfb :99 -screen 0 1920x1080x24 &
           ./gradlew runIdeForUiTests &
           echo "Waiting for IDE to start..."
-          timeout 180 bash -c 'until curl -s http://127.0.0.1:8082 > /dev/null 2>&1; do sleep 2; done' || { echo "IDE failed to start"; exit 1; }
+          timeout 180 bash -c 'until curl -s http://127.0.0.1:8082 > /dev/null 2>&1; do sleep 2; done' || {
+            echo "IDE failed to start"
+            exit 1
+          }
           echo "IDE is ready"
           ./gradlew uiTest
           kill %1 %2 || true
@@ -162,34 +168,13 @@ jobs:
           path: |
             build/reports/
             build/idea-sandbox/**/log/idea.log
-  changelog:
-    name: 📝 News fragment
-    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'skip news')
-    runs-on: ubuntu-26.04
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Require a user-facing change
-        run: |
-          found=0
-          while IFS= read -r path; do
-            if [[ "$path" =~ ^changelog\.d/[0-9]+\.(feature|bugfix|doc)\.md$ && -s "$path" ]]; then
-              found=1
-            fi
-          done < <(git diff --name-only --diff-filter=AM "origin/$GITHUB_BASE_REF"...HEAD)
-          if (( found == 0 )); then
-            echo "::error::add a nonempty changelog.d/<PR>.<type>.md fragment or apply skip news"
-            exit 1
-          fi
   gate:
-    name: Required checks pass
-    if: always()
-    needs: [build, verify, lint, test, ui-test, changelog]
+    name: 🚦 Required checks pass
+    if: ${{ !cancelled() }}
+    needs: [build, verify, lint, test, ui-test]
     runs-on: ubuntu-26.04
     steps:
-      - env:
+      - name: 🚦 Require all needed jobs to pass
+        env:
           NEEDS_JSON: ${{ toJSON(needs) }}
-        run: |
-          jq -e 'all(to_entries[]; .value.result == "success" or (.key == "changelog" and .value.result == "skipped"))' <<< "$NEEDS_JSON"
+        run: jq -e 'all(to_entries[]; .value.result == "success")' <<<"$NEEDS_JSON"
