@@ -28,12 +28,12 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: 📦 Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@29d4d5e6900db30502d7249043b59c18284a9777 # 6.2.0
+        uses: tox-dev/github-workflows/install-locked-tools@57a765127aae73adf7d0e24a7fe0f067f2d3ea3e # 6.2.1
         with:
           groups: release-notes
           venv: ${{ runner.temp }}/release-tools
       - name: 📝 Render release notes
-        uses: tox-dev/github-workflows/render-release-notes@29d4d5e6900db30502d7249043b59c18284a9777 # 6.2.0
+        uses: tox-dev/github-workflows/render-release-notes@57a765127aae73adf7d0e24a7fe0f067f2d3ea3e # 6.2.1
         with:
           tag: ${{ github.ref_name }}
           changelog: CHANGELOG.md
@@ -126,7 +126,7 @@ jobs:
           echo "path=${archives[0]}" >>"$GITHUB_OUTPUT"
       - name: ✍️ Sign verified plugin ZIP
         id: signed
-        uses: tox-dev/github-workflows/sign-jetbrains-plugin@29d4d5e6900db30502d7249043b59c18284a9777 # 6.2.0
+        uses: tox-dev/github-workflows/sign-jetbrains-plugin@57a765127aae73adf7d0e24a7fe0f067f2d3ea3e # 6.2.1
         with:
           archive: ${{ steps.unsigned.outputs.path }}
           sha256: ${{ needs.build-unsigned.outputs.archive_sha }}
@@ -165,7 +165,7 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: 📦 Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@29d4d5e6900db30502d7249043b59c18284a9777 # 6.2.0
+        uses: tox-dev/github-workflows/install-locked-tools@57a765127aae73adf7d0e24a7fe0f067f2d3ea3e # 6.2.1
         with:
           groups: release-notes
           venv: ${{ runner.temp }}/release-tools
@@ -224,7 +224,7 @@ jobs:
           if [[ "$channel" == "$version" ]]; then channel=''; fi
           echo "name=${channel%%.*}" >>"$GITHUB_OUTPUT"
       - name: 🚀 Publish signed ZIP
-        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@29d4d5e6900db30502d7249043b59c18284a9777 # 6.2.0
+        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@57a765127aae73adf7d0e24a7fe0f067f2d3ea3e # 6.2.1
         with:
           archive: dist/${{ needs.sign.outputs.archive_name }}
           sha256: ${{ needs.sign.outputs.archive_sha }}
@@ -264,7 +264,7 @@ jobs:
           read -r digest _ < <(sha256sum "${archives[0]}")
           test "$digest" = "$EXPECTED_SHA"
       - name: 🚀 Publish GitHub release
-        uses: tox-dev/github-workflows/publish-github-release@29d4d5e6900db30502d7249043b59c18284a9777 # 6.2.0
+        uses: tox-dev/github-workflows/publish-github-release@57a765127aae73adf7d0e24a7fe0f067f2d3ea3e # 6.2.1
         env:
           GH_TOKEN: ${{ github.token }}
         with:
