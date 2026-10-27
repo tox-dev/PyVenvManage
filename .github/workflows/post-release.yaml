@@ -1,0 +1,122 @@
+name: 🔀 Post-release
+on:
+  # The bump runs from main so release-auth can stay main-only; it checks out main and reads no tag run output.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows: ["🚀 Release"]
+    types: [completed]
+permissions: {}
+concurrency:
+  group: post-release-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+jobs:
+  post-release-prepare:
+    name: 🏷️ Prepare post-release version bump
+    if: >-
+      github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.path == '.github/workflows/release.yaml' && github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.source.outputs.tag }}
+      base-commit: ${{ steps.change.outputs.base-commit }}
+      candidate-commit: ${{ steps.change.outputs.candidate-commit }}
+      branch: ${{ steps.version.outputs.branch }}
+      next-version: ${{ steps.version.outputs.next-version }}
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - name: 📥 Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: ⚙️ Record the released tag
+        id: source
+        env:
+          TAG: ${{ github.event.workflow_run.head_branch }}
+        run: echo "tag=$TAG" >>"$GITHUB_OUTPUT"
+      - name: 🏷️ Select the next version
+        id: version
+        env:
+          TAG: ${{ steps.source.outputs.tag }}
+        run: |
+          set -euo pipefail
+          version="${TAG#v}"
+          IFS='.' read -r major minor patch extra <<<"$version"
+          echo "next-version=$major.$minor.$((patch + 1))-dev" >>"$GITHUB_OUTPUT"
+          echo "branch=post-release-$TAG" >>"$GITHUB_OUTPUT"
+      - name: ⚙️ Resolve the release App author
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          slug=tox-dev-pyvenvmanage-release
+          app_user_id=$(gh api "/users/${slug}[bot]" --jq .id)
+          git config user.name "${slug}[bot]"
+          git config user.email "${app_user_id}+${slug}[bot]@users.noreply.github.com"
+      - name: 🏷️ Prepare the exact version change
+        id: change
+        env:
+          TAG: ${{ steps.source.outputs.tag }}
+          NEXT_VERSION: ${{ steps.version.outputs.next-version }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/post-release"
+          base_commit=$(git rev-parse HEAD)
+          sed -i "s/^pluginVersion=.*/pluginVersion=$NEXT_VERSION/" gradle.properties
+          git add gradle.properties
+          printf 'gradle.properties\t%s\n' "$(git rev-parse :gradle.properties)" >"$RUNNER_TEMP/post-release/paths.tsv"
+          printf 'Set the next development version after %s.\n' "$TAG" >"$RUNNER_TEMP/post-release/body.md"
+          candidate_commit=
+          if ! git diff --cached --quiet; then
+            git commit -m "Bump version to $NEXT_VERSION after $TAG"
+            candidate_commit=$(git rev-parse HEAD)
+            git branch release-candidate HEAD
+            git bundle create "$RUNNER_TEMP/post-release/candidate.bundle" refs/heads/release-candidate
+          fi
+          echo "base-commit=$base_commit" >>"$GITHUB_OUTPUT"
+          echo "candidate-commit=$candidate_commit" >>"$GITHUB_OUTPUT"
+      - name: 📤 Upload the version change
+        id: upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: post-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/post-release/*
+          if-no-files-found: error
+  post-release:
+    name: 🔀 Open post-release version bump PR
+    needs: post-release-prepare
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    environment: release-auth
+    steps:
+      - name: 🔑 Create release App token
+        id: token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+      - name: 📩 Download the version change
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.post-release-prepare.outputs.artifact-id }}
+          path: ${{ runner.temp }}/post-release
+      - name: 🔀 Open the post-release PR
+        uses: tox-dev/github-workflows/publish-post-release-pr@259a3d3fb578d00517ffb73341fdd463259b0b2f # 6.0.1
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        with:
+          base-commit: ${{ needs.post-release-prepare.outputs.base-commit }}
+          branch: ${{ needs.post-release-prepare.outputs.branch }}
+          title: Bump version to ${{ needs.post-release-prepare.outputs.next-version }}
+          body-file: ${{ runner.temp }}/post-release/body.md
+          paths-file: ${{ runner.temp }}/post-release/paths.tsv
+          allowed-paths: gradle.properties
+          bundle: ${{ needs.post-release-prepare.outputs.candidate-commit != '' && format('{0}/post-release/candidate.bundle', runner.temp) || '' }}
+          candidate-commit: ${{ needs.post-release-prepare.outputs.candidate-commit }}
