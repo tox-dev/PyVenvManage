@@ -27,9 +27,9 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: 📦 Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@259a3d3fb578d00517ffb73341fdd463259b0b2f # 6.0.1
+        uses: tox-dev/github-workflows/install-locked-tools@ddb6260e1d2ec52b6fe1bf0b008c2eb44780786c # 6.0.3
         with:
           groups: release-news
           venv: ${{ runner.temp }}/release-tools
       - name: 🔍 Validate news fragments
-        uses: tox-dev/github-workflows/validate-news@259a3d3fb578d00517ffb73341fdd463259b0b2f # 6.0.1
+        uses: tox-dev/github-workflows/validate-news@ddb6260e1d2ec52b6fe1bf0b008c2eb44780786c # 6.0.3
