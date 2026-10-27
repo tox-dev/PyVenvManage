@@ -108,7 +108,7 @@ jobs:
           artifact-ids: ${{ needs.post-release-prepare.outputs.artifact-id }}
           path: ${{ runner.temp }}/post-release
       - name: 🔀 Open the post-release PR
-        uses: tox-dev/github-workflows/publish-post-release-pr@259a3d3fb578d00517ffb73341fdd463259b0b2f # 6.0.1
+        uses: tox-dev/github-workflows/publish-post-release-pr@ddb6260e1d2ec52b6fe1bf0b008c2eb44780786c # 6.0.3
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         with:
