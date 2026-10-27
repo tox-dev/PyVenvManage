@@ -15,7 +15,7 @@ concurrency:
 jobs:
   prepare:
     name: 🏷️ Prepare Towncrier release
-    uses: tox-dev/github-workflows/.github/workflows/prepare-towncrier-release.yaml@ddb6260e1d2ec52b6fe1bf0b008c2eb44780786c # 6.0.3
+    uses: tox-dev/github-workflows/.github/workflows/prepare-towncrier-release.yaml@29d4d5e6900db30502d7249043b59c18284a9777 # 6.2.0
     permissions:
       contents: read
       pull-requests: read
