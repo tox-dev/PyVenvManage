@@ -37,8 +37,8 @@ publish no advisory. Classify by who supplies the dangerous input, not by how ba
 **In scope**
 
 - The plugin setting or changing an interpreter without the user choosing the action.
-- The plugin running a program while it decorates the project view; decoration reads `pyvenv.cfg` only.
-- Crafted `pyvenv.cfg` content making the plugin read or write outside the environment folder.
+- The plugin running a program while it decorates the project view; decoration only reads files.
+- Crafted `pyvenv.cfg` or marker content making the plugin read or write outside the environment folder.
 
 **Out of scope**
 

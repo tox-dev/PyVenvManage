@@ -7,9 +7,10 @@ SECURITY.md wins and we fix this file.
 ## How PyVenvManage works
 
 PyVenvManage scans the project view for folders that hold a `pyvenv.cfg` and a Python executable, and decorates them
-with the environment type and the Python version read from `pyvenv.cfg`. When the user right-clicks such a folder and
-chooses an action, it registers that interpreter as an SDK and sets it for the project or module. It starts no process
-and opens no network connection of its own.
+with the Python version read from `pyvenv.cfg` and an environment type guessed from markers in the folder (a
+`conda-meta` directory, a Hatch `.gitignore`, the user's Poetry and Pipenv locations). When the user right-clicks such a
+folder and chooses an action, it registers that folder's interpreter as an SDK and sets it for the project or module. It
+starts no process and opens no network connection of its own.
 
 ```mermaid
 flowchart LR
@@ -30,11 +31,11 @@ which first needs a trusted element compromised is out of scope; the first triag
 [DOMPurify](https://github.com/cure53/DOMPurify/blob/main/SECURITY.md#what-we-consider-a-vulnerability) puts it, is what
 the attacker controls.
 
-| Project                                                                                          | Language        | Where it draws the line                                                                             |
-| ------------------------------------------------------------------------------------------------ | --------------- | --------------------------------------------------------------------------------------------------- |
-| [JetBrains project trust](https://www.jetbrains.com/help/idea/project-security.html)             | Kotlin and Java | A project opened in safe mode runs no build scripts or run configurations until the user trusts it. |
-| [VS Code Workspace Trust](https://code.visualstudio.com/docs/editing/workspaces/workspace-trust) | TypeScript      | Extensions disable features that run workspace code until the user trusts the folder.               |
-| [IntelliJ Platform](https://github.com/JetBrains/intellij-community/security/policy)             | Kotlin and Java | Vulnerabilities in the IDE platform itself go to JetBrains, not to plugin authors.                  |
+| Project                                                                                          | Language        | Where it draws the line                                                                              |
+| ------------------------------------------------------------------------------------------------ | --------------- | ---------------------------------------------------------------------------------------------------- |
+| [JetBrains project trust](https://www.jetbrains.com/help/idea/project-security.html)             | Kotlin and Java | A project opened in Safe Mode restricts executing code, builds and scripts until the user trusts it. |
+| [VS Code Workspace Trust](https://code.visualstudio.com/docs/editing/workspaces/workspace-trust) | TypeScript      | Extensions disable features that run workspace code until the user trusts the folder.                |
+| [IntelliJ Platform](https://github.com/JetBrains/intellij-community/security/policy)             | Kotlin and Java | JetBrains' reporting policy for the platform the plugin runs on.                                     |
 
 ## Trusted
 
@@ -45,9 +46,9 @@ An attacker who controls any of these already has what PyVenvManage could give t
 
 ## Untrusted inputs
 
-| Input                          | Comes from       | What PyVenvManage guarantees                      |
-| ------------------------------ | ---------------- | ------------------------------------------------- |
-| `pyvenv.cfg` and folder layout | A cloned project | Read as text to label the folder; never executed. |
+| Input                                        | Comes from       | What PyVenvManage guarantees                      |
+| -------------------------------------------- | ---------------- | ------------------------------------------------- |
+| `pyvenv.cfg`, marker files and folder layout | A cloned project | Read as text to label the folder; never executed. |
 
 ## Threats and controls
 
@@ -70,6 +71,12 @@ Release carries the same ZIP with GitHub's release attestation. Every workflow p
 | Opening a project sets its `.venv` as interpreter without a click | Vulnerability       | Interpreter changes need a user action. |
 | The user picks a malicious `.venv` and the IDE runs it            | Not a vulnerability | The user chose it.                      |
 | A folder shows the wrong Python version                           | Bug                 | Label only.                             |
+
+## Severity
+
+- **High:** the plugin runs a program, or sets an interpreter, without the user choosing the action.
+- **Medium:** crafted project content makes the plugin read or write outside the environment folder.
+- **Low:** a crash or wrong label on a malformed environment folder.
 
 ## Accepted risks
 
