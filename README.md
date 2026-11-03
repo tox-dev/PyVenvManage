@@ -4,6 +4,8 @@
 [![Version](https://img.shields.io/jetbrains/plugin/v/20536)](https://plugins.jetbrains.com/plugin/20536/versions)
 [![Rating](https://img.shields.io/jetbrains/plugin/r/rating/20536)](https://plugins.jetbrains.com/plugin/20536)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/20536)](https://plugins.jetbrains.com/plugin/20536)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/tox-dev/PyVenvManage/badge)](https://scorecard.dev/viewer/?uri=github.com/tox-dev/PyVenvManage)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/16269/badge)](https://www.bestpractices.dev/projects/16269)
 
 See the [changelog](CHANGELOG.md) for released changes.
 
