@@ -143,7 +143,7 @@ jobs:
     if: always() && needs.release-notes.result == 'success' && needs.sign.result == 'success' && needs.marketplace-check.result == 'success' && (needs.marketplace-publish.result == 'success' || (needs.marketplace-publish.result == 'skipped' && needs.marketplace-check.outputs.publish == 'false'))
     runs-on: ubuntu-26.04
     permissions:
-      contents: read
+      contents: write
     environment: release
     steps:
       - name: 📩 Download release notes
