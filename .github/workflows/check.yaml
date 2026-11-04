@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   # JetBrains moves platform APIs and deletes EAP artifacts between our commits, so build against them daily.
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "55 8 * * *"
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
