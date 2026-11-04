@@ -1,0 +1,20 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["mise"],
+  "schedule": ["before 6am on Tuesday"],
+  "minimumReleaseAge": "7 days",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on Tuesday"]
+  },
+  "packageRules": [
+    {
+      "description": "A JDK major bump has to move together with jvmToolchain in build.gradle.kts",
+      "matchManagers": ["mise"],
+      "matchPackageNames": ["java"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}
