@@ -23,8 +23,7 @@ on:
         required: true
         type: string
 permissions:
-  actions: read
-  contents: write
+  contents: read
 concurrency:
   group: release-refs/tags/${{ inputs.tag }}
   cancel-in-progress: false
@@ -32,7 +31,9 @@ jobs:
   finalize:
     name: 🚀 Finalize GitHub Release
     runs-on: ubuntu-26.04
-    environment: release
+    permissions:
+      actions: read
+      contents: write
     steps:
       - name: 🔍 Verify the original tag run
         id: source
