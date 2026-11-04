@@ -14,84 +14,14 @@ concurrency:
 permissions:
   contents: read
 jobs:
-  build:
-    name: 🏗️ Build
-    runs-on: ubuntu-26.04
-    steps:
-      - name: 🧽 Free disk space
-        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
-        with:
-          tool-cache: false
-          large-packages: false
-      - name: 📥 Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: 🧰 Set up mise (JDKs)
-        uses: jdx/mise-action@6be3c7ed4c21d4f76b208d351d95aac273ebb76d # v5.2.4
-      - name: ☕ Set up Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-      - name: 🏗️ Build plugin
-        run: ./gradlew --console=plain buildPlugin
-      - name: ⚙️ Prepare artifact
-        id: artifact
-        working-directory: build/distributions
-        run: |
-          shopt -s nullglob
-          archives=(*.zip)
-          test "${#archives[@]}" -eq 1
-          unzip "${archives[0]}" -d content
-          echo "filename=${archives[0]%.zip}" >>"$GITHUB_OUTPUT"
-      - name: 📤 Upload artifact
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: ${{ steps.artifact.outputs.filename }}
-          path: ./build/distributions/content/*/*
-  verify:
-    name: 🔍 Verify (${{ matrix.label }})
-    runs-on: ubuntu-26.04
-    strategy:
-      fail-fast: false
-      matrix:
-        # The EAP entry catches platform APIs that the next release moves or removes.
-        include:
-          - label: PY
-            version: ""
-          - label: PY 263 EAP
-            version: 263-EAP-SNAPSHOT
-    steps:
-      - name: 🧽 Free disk space
-        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
-        with:
-          tool-cache: false
-          large-packages: false
-          android: true
-          dotnet: true
-          haskell: true
-          docker-images: true
-      - name: 📥 Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: 🧰 Set up mise (JDKs)
-        uses: jdx/mise-action@6be3c7ed4c21d4f76b208d351d95aac273ebb76d # v5.2.4
-      - name: ☕ Set up Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-      - name: 💾 Cache verifier IDEs
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.pluginVerifier/ides
-          key: plugin-verifier-ides-${{ matrix.version }}-${{ hashFiles('gradle.properties') }}
-      - name: 🔍 Run verification
-        run: ./gradlew verifyPlugin -PverifyIde=PY ${MATRIX_VERSION:+-PverifyVersion=$MATRIX_VERSION}
-        env:
-          MATRIX_VERSION: ${{ matrix.version }}
-      - name: 📤 Upload results
-        if: ${{ always() }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: pluginVerifier-result-${{ matrix.label }}
-          path: ${{ github.workspace }}/build/reports/pluginVerifier
+  plugin:
+    name: 🧩 JetBrains plugin check
+    uses: tox-dev/github-workflows/.github/workflows/jetbrains-plugin-check.yaml@2c1f5e4ceda37c41eb8367b5cbeaa741aa60a566 # 6.5.2
+    permissions:
+      contents: read
+    with:
+      # The EAP entry catches platform APIs that the next release moves or removes.
+      verify-matrix: '[{"label":"PY","ide":"PY","version":""},{"label":"PY 263 EAP","ide":"PY","version":"263-EAP-SNAPSHOT"}]'
   lint:
     name: 🧹 Lint
     runs-on: ubuntu-26.04
@@ -130,51 +60,14 @@ jobs:
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       - name: 🧪 Run tests with coverage
         run: ./gradlew test koverVerify
-  ui-test:
-    name: 🧪 UI tests
-    runs-on: ubuntu-26.04
-    steps:
-      - name: 🧽 Free disk space
-        uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
-        with:
-          tool-cache: false
-          large-packages: false
-      - name: 📥 Check out code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: 🧰 Set up mise (JDKs)
-        uses: jdx/mise-action@6be3c7ed4c21d4f76b208d351d95aac273ebb76d # v5.2.4
-      - name: ☕ Set up Gradle
-        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-      - name: 🧪 Run UI tests
-        run: |
-          export DISPLAY=:99.0
-          Xvfb :99 -screen 0 1920x1080x24 &
-          ./gradlew runIdeForUiTests &
-          echo "Waiting for IDE to start..."
-          timeout 180 bash -c 'until curl -s http://127.0.0.1:8082 > /dev/null 2>&1; do sleep 2; done' || {
-            echo "IDE failed to start"
-            exit 1
-          }
-          echo "IDE is ready"
-          ./gradlew uiTest
-          kill %1 %2 || true
-      - name: 📤 Upload UI test artifacts
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: ui-test-failure
-          path: |
-            build/reports/
-            build/idea-sandbox/**/log/idea.log
   gate:
-    name: 🚦 Required checks pass
+    name: "🚦 ${{ github.event_name == 'pull_request' && 'Required checks pass' || 'Non-PR checks pass' }}"
     if: ${{ !cancelled() }}
-    needs: [build, verify, lint, test, ui-test]
+    needs: [plugin, lint, test]
     runs-on: ubuntu-26.04
+    permissions: {}
     steps:
       - name: 🚦 Require all needed jobs to pass
-        env:
-          NEEDS_JSON: ${{ toJSON(needs) }}
-        run: jq -e 'all(to_entries[]; .value.result == "success")' <<<"$NEEDS_JSON"
+        uses: tox-dev/github-workflows/required-checks@2c1f5e4ceda37c41eb8367b5cbeaa741aa60a566 # 6.5.2
+        with:
+          needs: ${{ toJSON(needs) }}
