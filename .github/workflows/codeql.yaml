@@ -11,23 +11,22 @@ concurrency:
   cancel-in-progress: true
 permissions: {}
 jobs:
-  analyze:
-    name: 🛡️ Analyze ${{ matrix.language }}
+  actions:
+    name: 🛡️ Analyze
+    uses: tox-dev/github-workflows/.github/workflows/codeql.yaml@2c1f5e4ceda37c41eb8367b5cbeaa741aa60a566 # 6.5.2
+    permissions:
+      contents: read
+      security-events: write
+    with:
+      languages: '["actions"]'
+  java-kotlin:
+    name: 🛡️ Analyze java-kotlin
     runs-on: ubuntu-26.04
     permissions:
       contents: read
       security-events: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - language: actions
-            build-mode: none
-          - language: java-kotlin
-            build-mode: manual
     steps:
       - name: 🧽 Free disk space
-        if: matrix.build-mode == 'manual'
         uses: jlumbroso/free-disk-space@ceedf095f4ec1a097402bc6bd80831f2e1a6fde6 # v2.0.0
         with:
           tool-cache: false
@@ -39,20 +38,17 @@ jobs:
       - name: 🛡️ Initialize CodeQL
         uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
-          languages: ${{ matrix.language }}
-          build-mode: ${{ matrix.build-mode }}
+          languages: java-kotlin
+          build-mode: manual
       - name: 🧰 Set up mise (JDKs)
-        if: matrix.build-mode == 'manual'
         uses: jdx/mise-action@6be3c7ed4c21d4f76b208d351d95aac273ebb76d # v5.2.4
       - name: ☕ Set up Gradle
-        if: matrix.build-mode == 'manual'
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       - name: 🏗️ Compile plugin sources
-        if: matrix.build-mode == 'manual'
         # CodeQL extracts only what the compiler actually runs on, so a cache hit leaves the database empty; the
         # extractor runs inside the Kotlin compiler and overflows the default heap.
         run: ./gradlew --console=plain --no-build-cache --rerun-tasks -Dorg.gradle.jvmargs=-Xmx4g -Pkotlin.daemon.jvmargs=-Xmx6g compileKotlin compileJava
       - name: 🛡️ Analyze
         uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
-          category: "/language:${{ matrix.language }}"
+          category: "/language:java-kotlin"
