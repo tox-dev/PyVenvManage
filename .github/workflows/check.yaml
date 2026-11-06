@@ -60,10 +60,18 @@ jobs:
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       - name: 🧪 Run tests with coverage
         run: ./gradlew test koverVerify
+  release:
+    name: "🏷️ Release dry run"
+    uses: $/.github/workflows/prepare-release.yaml
+    permissions:
+      contents: read
+      pull-requests: read
+    with:
+      dry-run: true
   gate:
     name: "🚦 ${{ github.event_name == 'pull_request' && 'Required checks pass' || 'Non-PR checks pass' }}"
     if: ${{ !cancelled() }}
-    needs: [plugin, lint, test]
+    needs: [plugin, lint, test, release]
     runs-on: ubuntu-26.04
     permissions: {}
     steps:
