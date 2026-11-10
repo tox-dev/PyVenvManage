@@ -14,7 +14,7 @@ buildscript {
             classpath("org.freemarker:freemarker:2.3.35")
             classpath("com.fasterxml.jackson.core:jackson-databind:2.22.4")
             classpath("io.opentelemetry:opentelemetry-api:1.67.0")
-            classpath("org.jsoup:jsoup:1.23.2")
+            classpath("org.jsoup:jsoup:1.24.1")
         }
     }
 }
