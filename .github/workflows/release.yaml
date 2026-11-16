@@ -10,14 +10,14 @@ concurrency:
 jobs:
   build:
     name: 🧩 JetBrains plugin check
-    uses: tox-dev/github-workflows/.github/workflows/jetbrains-plugin-check.yaml@bf1c3ab0aa137d307a07aad844d507af73039387 # 6.8.0
+    uses: tox-dev/github-workflows/.github/workflows/jetbrains-plugin-check.yaml@ef0cd88bef592260a48345753b8b509b209ab189 # 6.8.3
     permissions:
       contents: read
     with:
       plugin-version: ${{ github.ref_name }}
   release-notes:
     name: 📝 Render GitHub Release notes
-    uses: tox-dev/github-workflows/.github/workflows/release-notes.yaml@bf1c3ab0aa137d307a07aad844d507af73039387 # 6.8.0
+    uses: tox-dev/github-workflows/.github/workflows/release-notes.yaml@ef0cd88bef592260a48345753b8b509b209ab189 # 6.8.3
     permissions:
       contents: read
     with:
@@ -44,7 +44,7 @@ jobs:
           path: dist
       - name: ✍️ Sign verified plugin ZIP
         id: signed
-        uses: tox-dev/github-workflows/sign-jetbrains-plugin@6.8.0
+        uses: tox-dev/github-workflows/sign-jetbrains-plugin@6.8.3
         with:
           archive: dist/${{ needs.build.outputs.archive-name }}
           sha256: ${{ needs.build.outputs.archive-sha256 }}
@@ -90,13 +90,13 @@ jobs:
           python-version: "3.15"
           enable-cache: false
       - name: 📦 Install locked release tools
-        uses: tox-dev/github-workflows/install-locked-tools@6.8.0
+        uses: tox-dev/github-workflows/install-locked-tools@6.8.3
         with:
           groups: release-notes
           venv: ${{ runner.temp }}/release-tools
       - name: 🔍 Compare Marketplace version
         id: stage
-        uses: tox-dev/github-workflows/stage-jetbrains-marketplace@6.8.0
+        uses: tox-dev/github-workflows/stage-jetbrains-marketplace@6.8.3
         with:
           archive: dist/${{ needs.sign.outputs.archive-name }}
           sha256: ${{ needs.sign.outputs.sha256 }}
@@ -124,7 +124,7 @@ jobs:
           artifact-ids: ${{ needs.release-notes.outputs.artifact-id }}
           path: ${{ runner.temp }}/marketplace-notes
       - name: 🚀 Publish signed ZIP
-        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@6.8.0
+        uses: tox-dev/github-workflows/publish-jetbrains-marketplace@6.8.3
         with:
           archive: dist/${{ needs.sign.outputs.archive-name }}
           sha256: ${{ needs.sign.outputs.sha256 }}
@@ -164,7 +164,7 @@ jobs:
           read -r digest _ < <(sha256sum "${archives[0]}")
           test "$digest" = "$EXPECTED_SHA"
       - name: 🚀 Publish GitHub release
-        uses: tox-dev/github-workflows/publish-github-release@6.8.0
+        uses: tox-dev/github-workflows/publish-github-release@6.8.3
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -194,7 +194,7 @@ jobs:
           persist-credentials: false
       - name: 🏷️ Prepare the exact version change
         id: change
-        uses: tox-dev/github-workflows/prepare-jetbrains-post-release@6.8.0
+        uses: tox-dev/github-workflows/prepare-jetbrains-post-release@6.8.3
         with:
           tag: ${{ github.ref_name }}
           app-slug: tox-dev-pyvenvmanage-release
@@ -232,7 +232,7 @@ jobs:
           artifact-ids: ${{ needs.post-release-prepare.outputs.artifact-id }}
           path: ${{ runner.temp }}/post-release
       - name: 🔀 Open the post-release PR
-        uses: tox-dev/github-workflows/publish-post-release-pr@6.8.0
+        uses: tox-dev/github-workflows/publish-post-release-pr@6.8.3
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         with:
