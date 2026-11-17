@@ -36,12 +36,12 @@ jobs:
         with:
           persist-credentials: false
       - name: 🛡️ Initialize CodeQL
-        uses: github/codeql-action/init@v4.39.2
+        uses: github/codeql-action/init@v4.39.3
         with:
           languages: java-kotlin
           build-mode: manual
       - name: 🧰 Set up mise (JDKs)
-        uses: jdx/mise-action@v5.2.6
+        uses: jdx/mise-action@v5.2.7
       - name: ☕ Set up Gradle
         uses: gradle/actions/setup-gradle@v6.4.1
       - name: 🏗️ Compile plugin sources
@@ -49,6 +49,6 @@ jobs:
         # extractor runs inside the Kotlin compiler and overflows the default heap.
         run: ./gradlew --console=plain --no-build-cache --rerun-tasks -Dorg.gradle.jvmargs=-Xmx4g -Pkotlin.daemon.jvmargs=-Xmx6g compileKotlin compileJava
       - name: 🛡️ Analyze
-        uses: github/codeql-action/analyze@v4.39.2
+        uses: github/codeql-action/analyze@v4.39.3
         with:
           category: "/language:java-kotlin"
