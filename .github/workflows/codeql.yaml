@@ -41,7 +41,7 @@ jobs:
           languages: java-kotlin
           build-mode: manual
       - name: 🧰 Set up mise (JDKs)
-        uses: jdx/mise-action@v5.2.7
+        uses: jdx/mise-action@v5.2.9
       - name: ☕ Set up Gradle
         uses: gradle/actions/setup-gradle@v6.4.1
       - name: 🏗️ Compile plugin sources
