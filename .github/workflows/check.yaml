@@ -36,7 +36,7 @@ jobs:
         with:
           persist-credentials: false
       - name: 🧰 Set up mise (JDKs)
-        uses: jdx/mise-action@v5.2.7
+        uses: jdx/mise-action@v5.2.9
       - name: ☕ Set up Gradle
         uses: gradle/actions/setup-gradle@v6.4.1
       - name: 🧹 Run linter
@@ -55,7 +55,7 @@ jobs:
         with:
           persist-credentials: false
       - name: 🧰 Set up mise (JDKs)
-        uses: jdx/mise-action@v5.2.7
+        uses: jdx/mise-action@v5.2.9
       - name: ☕ Set up Gradle
         uses: gradle/actions/setup-gradle@v6.4.1
       - name: 🧪 Run tests with coverage
